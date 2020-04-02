@@ -62,9 +62,17 @@ local function TextToNumber(text)
 	return typeof(tonumber(text)) == "number" and tonumber(text) or 0
 end
 
-local function TeleportToCamera() 
+local function TeleportToCamera(args)
 	if game.Players.LocalPlayer.Character then
 		game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(workspace.CurrentCamera.CFrame)
+	end
+end
+
+local function RemoveNLR()
+	for _, v in pairs(workspace:GetChildren()) do
+		if v.Name == "NL" then
+			v:Destroy()
+		end
 	end
 end
 
@@ -166,7 +174,7 @@ options.Position = UDim2.new(0, 0, 1, 0)
 options.Size = UDim2.new(1, 0, 1, -21)
 options.BackgroundTransparency = 1
 options.ScrollBarThickness = 0
-options.CanvasSize = UDim2.new(0, 0, 0, 733)
+options.CanvasSize = UDim2.new(0, 0, 0, 10000)
 options.BorderSizePixel = 0
 options.ScrollingEnabled = false
 
@@ -557,12 +565,21 @@ option_Freecam_Speed_Value.Text = 100
 local option_Freecam_TeleportHereButton = CreateOption(options, "Freecam_TeleportHere", "Teleport Here")
 CreateButton(option_Freecam_TeleportHereButton, 130, 205, "Teleport", TeleportToCamera)
 
+-- Misc.
+AddPadding(options, 14, "Misc")
+
+local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
+CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
+
 
 -- Extra Info
 AddPadding(options, 40, "")
 AddPadding(options, 10, "Extra Info")
 
 CreateOption(options, "CreatedBy", "Created by henrynguyen2163#9302")
+
+-- Resize
+options.CanvasSize = UDim2.new(0, 0, 0, options_List.AbsoluteContentSize.Y + 5)
 
 -- Dragging Menu
 local dragging = false
@@ -715,6 +732,7 @@ while true do
 						profile.Parts = plr.Character:GetDescendants()
 						profile.Model = plr.Character
 						
+						profile.AdditionalText = ""
 						profile.Type = "Player"
 						
 						table.insert(profiles, profile)
@@ -733,6 +751,7 @@ while true do
 						profile.Parts = entity:GetDescendants()
 						profile.Model = entity
 						
+						profile.AdditionalText = ""
 						profile.Type = "Other"
 						
 						
@@ -758,6 +777,14 @@ while true do
 							end
 						end
 						
+						if entity:FindFirstChild("TrueOwner") then
+							if entity.TrueOwner.Locked.Value == false then
+								profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+							else
+								profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+							end
+						end
+						
 						table.insert(profiles, profile)
 					end
 				end
@@ -772,6 +799,7 @@ while true do
 						profile.Parts = entity:GetDescendants()
 						profile.Model = entity
 						
+						profile.AdditionalText = ""
 						profile.Type = "Other"
 						
 						
