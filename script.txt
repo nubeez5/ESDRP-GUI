@@ -76,6 +76,20 @@ local function RemoveNLR()
 	end
 end
 
+local function GiveDeleteTool()
+	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
+	tool.Name = "Delete Tool"
+	tool.RequiresHandle = false
+	
+	tool.Equipped:Connect(function(mouse)
+		mouse.Button1Down:Connect(function()
+			if mouse.Target then
+				mouse.Target:Destroy()
+			end
+		end)
+	end)
+end
+
 -- Create Gui
 local gui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 gui.Name = RandomString(50)
@@ -570,6 +584,9 @@ AddPadding(options, 14, "Misc")
 
 local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
 CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
+
+local option_DestroyParts = CreateOption(options, "ESP_DestroyParts_Enabled", "Give Delete Tool")
+local option_DestroyParts_Button = CreateButton(option_DestroyParts, 130, 205, "Give", GiveDeleteTool)
 
 
 -- Extra Info
