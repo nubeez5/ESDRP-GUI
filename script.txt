@@ -13,9 +13,6 @@ local localPlayer = game.Players.LocalPlayer
 local rng = Random.new()
 
 local inputService = game:GetService("UserInputService")
-
-local ESP_Box_MinDistance = 1000
-
 -- Functions
 local function SendNotification(title, text)
 	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
@@ -911,32 +908,27 @@ while true do
 				local t = {}
 				local totalOnScreen = true
 				
-				if distanceToProfile < ESP_Box_MinDistance then
-					local c1 = BB_Position * CFrame.new(s.X, s.Y, s.Z).Position
-					local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
-					local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
-					local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
-					
-					local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
-					local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
-					local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
-					local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
-					
-					t = {c1, c2, c3, c4, c5, c6, c7, c8}
-					
-					for _, v in pairs(t) do
-						local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
-						
-						min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
-						max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
-						
-						if onScreen == false then
-							totalOnScreen = false
-						end
+				local c1 = BB_Position * CFrame.new(s.X, s.Y, s.Z).Position
+				local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
+				local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
+				local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
+
+				local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
+				local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
+				local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
+				local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
+
+				t = {c1, c2, c3, c4, c5, c6, c7, c8}
+
+				for _, v in pairs(t) do
+					local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
+
+					min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
+					max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
+
+					if onScreen == false then
+						totalOnScreen = false
 					end
-				else
-					min = Vector3.new(0, 0, 0)
-					max = Vector3.new(0, 0, 0)
 				end
 				
 				if totalOnScreen then
@@ -956,14 +948,12 @@ while true do
 				if option_ESP_NameTag_Slider.GetValue() == "True" then
 					local onScreenTotal = true
 					
-					if distanceToProfile < ESP_Box_MinDistance then
-						for _, v in pairs(t) do
-							local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
-							p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
-							
-							if onScreen == false then
-								onScreenTotal = false
-							end
+					for _, v in pairs(t) do
+						local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
+						p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
+
+						if onScreen == false then
+							onScreenTotal = false
 						end
 					end
 					
