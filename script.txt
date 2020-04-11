@@ -93,11 +93,11 @@ local function GiveDeleteTool()
 end
 
 -- Create Gui
-local gui = Instance.new("ScreenGui", localPlayer.PlayerGui)
+local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = RandomString(50)
 gui.ResetOnSpawn = false
 
-local espGui = Instance.new("ScreenGui", localPlayer.PlayerGui)
+local espGui = Instance.new("ScreenGui", game.CoreGui)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
