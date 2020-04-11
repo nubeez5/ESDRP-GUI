@@ -14,6 +14,8 @@ local rng = Random.new()
 
 local inputService = game:GetService("UserInputService")
 
+local ESP_Box_MinDistance = 1000
+
 -- Functions
 local function SendNotification(title, text)
 	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
@@ -91,11 +93,11 @@ local function GiveDeleteTool()
 end
 
 -- Create Gui
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 gui.Name = RandomString(50)
 gui.ResetOnSpawn = false
 
-local espGui = Instance.new("ScreenGui", game.CoreGui)
+local espGui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
@@ -903,31 +905,38 @@ while true do
 				local s = BB_Size
 				
 				-- ESP Hitbox
-				local c1 = BB_Position * CFrame.new(s.X, s.Y, s.Z).Position
-				local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
-				local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
-				local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
-				
-				local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
-				local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
-				local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
-				local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
-				
-				local t = {c1, c2, c3, c4, c5, c6, c7, c8}
-				local totalOnScreen = true
-				
 				local min = Vector2.new(math.huge, math.huge)
 				local max = Vector2.new(-math.huge, -math.huge)
 				
-				for _, v in pairs(t) do
-					local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
+				local t = {}
+				local totalOnScreen = true
+				
+				if distanceToProfile < ESP_Box_MinDistance then
+					local c1 = BB_Position * CFrame.new(s.X, s.Y, s.Z).Position
+					local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
+					local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
+					local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
 					
-					min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
-					max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
+					local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
+					local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
+					local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
+					local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
 					
-					if onScreen == false then
-						totalOnScreen = false
+					t = {c1, c2, c3, c4, c5, c6, c7, c8}
+					
+					for _, v in pairs(t) do
+						local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
+						
+						min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
+						max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
+						
+						if onScreen == false then
+							totalOnScreen = false
+						end
 					end
+				else
+					min = Vector3.new(0, 0, 0)
+					max = Vector3.new(0, 0, 0)
 				end
 				
 				if totalOnScreen then
@@ -947,12 +956,14 @@ while true do
 				if option_ESP_NameTag_Slider.GetValue() == "True" then
 					local onScreenTotal = true
 					
-					for _, v in pairs(t) do
-						local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
-						p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
-						
-						if onScreen == false then
-							onScreenTotal = false
+					if distanceToProfile < ESP_Box_MinDistance then
+						for _, v in pairs(t) do
+							local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
+							p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
+							
+							if onScreen == false then
+								onScreenTotal = false
+							end
 						end
 					end
 					
