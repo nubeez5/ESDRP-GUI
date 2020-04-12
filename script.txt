@@ -13,6 +13,9 @@ local localPlayer = game.Players.LocalPlayer
 local rng = Random.new()
 
 local inputService = game:GetService("UserInputService")
+
+local deletedParts = {}
+
 -- Functions
 local function SendNotification(title, text)
 	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
@@ -61,6 +64,14 @@ local function TextToNumber(text)
 	return typeof(tonumber(text)) == "number" and tonumber(text) or 0
 end
 
+local function GetActualPlayerName(name)
+    for _, v in pairs(game.Players:GetPlayers()) do
+        if string.find(string.lower(v.Name), string.lower(name)) then
+            return v.name
+        end
+    end
+end
+
 local function TeleportToCamera(args)
 	if game.Players.LocalPlayer.Character then
 		game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(workspace.CurrentCamera.CFrame)
@@ -75,6 +86,17 @@ local function RemoveNLR()
 	end
 end
 
+local function UndoDeletedParts()
+	for _, info in pairs(deletedParts) do
+		if info[1] ~= nil then
+			info[1].CFrame = info[2]
+			info[1].Anchored = info[3]
+		end
+	end
+	
+	deletedParts = {}
+end
+
 local function GiveDeleteTool()
 	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
 	tool.Name = "Delete Tool"
@@ -83,18 +105,42 @@ local function GiveDeleteTool()
 	tool.Equipped:Connect(function(mouse)
 		mouse.Button1Down:Connect(function()
 			if mouse.Target then
-				mouse.Target:Destroy()
+				if mouse.Target:IsA("BasePart") then
+					table.insert(deletedParts, {mouse.Target, mouse.Target.CFrame, mouse.Target.Anchored})
+					mouse.Target.CFrame = CFrame.new(0, 1000000, 0)
+				end
 			end
 		end)
 	end)
 end
 
+local function SellToolInHand(target, price)
+	local tool = nil
+	
+	for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+		if v:IsA("Tool") then
+			tool = v
+		end
+	end
+	
+	if tool then
+		game.ReplicatedStorage.Events.MenuActionEvent:FireServer(
+			19,
+			game.Players[GetActualPlayerName(target)],
+			{
+				tool,
+				price
+			}
+		)
+	end
+end
+
 -- Create Gui
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
 gui.Name = RandomString(50)
 gui.ResetOnSpawn = false
 
-local espGui = Instance.new("ScreenGui", game.CoreGui)
+local espGui = Instance.new("ScreenGui", game.Players.LocalPlayer.PlayerGui)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
@@ -584,8 +630,11 @@ AddPadding(options, 14, "Misc")
 local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
 CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
 
-local option_DestroyParts = CreateOption(options, "ESP_DestroyParts_Enabled", "Give Delete Tool")
+local option_DestroyParts = CreateOption(options, "ESP_DestroyParts_Give", "Give Delete Tool")
 local option_DestroyParts_Button = CreateButton(option_DestroyParts, 130, 205, "Give", GiveDeleteTool)
+
+local option_UndoDestroyParts = CreateOption(options, "ESP_UndoDestroyParts_Enabled", "Undo Deleted Parts")
+local option_UndoDestroyParts_Button = CreateButton(option_UndoDestroyParts, 130, 205, "Undo", UndoDeletedParts)
 
 
 -- Extra Info
