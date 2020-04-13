@@ -586,7 +586,7 @@ local option_ESP_Scavenges = CreateOption(options, "ESP_Scavenges", "Scavenges S
 local option_ESP_Scavenges_Slider = CreateSlider(option_ESP_Scavenges, 130, 205, "True", "False", false)
 
 -- Loot Boxes Shown
-local option_ESP_LootBoxes = CreateOption(options, "ESP_LootBoxes", "LootBoxes Shown")
+local option_ESP_LootBoxes = CreateOption(options, "ESP_LootBoxes", "Loot Boxes Shown")
 local option_ESP_LootBoxes_Slider = CreateSlider(option_ESP_LootBoxes, 130, 205, "True", "False", false)
 
 -- Materials Shown
