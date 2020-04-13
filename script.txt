@@ -807,6 +807,15 @@ while true do
 						profile.AdditionalText = ""
 						profile.Type = "Player"
 						
+						if plr:FindFirstChild("PlayerData") then
+							local plrData = plr.PlayerData
+							local currency = plrData.Currency.Value
+							local karma = plr.Karma.Value
+							
+							profile.AdditionalText = profile.AdditionalText .. "[ Money: " .. tostring(currency) .. " ]"
+							profile.AdditionalText = profile.AdditionalText .. "[ Karma: " .. tostring(karma) .. " ]"
+						end
+						
 						table.insert(profiles, profile)
 					end
 				end
