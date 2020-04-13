@@ -770,9 +770,11 @@ end
 
 localPlayer.CharacterAdded:Connect(function(char)
 	wait()
-	char.Humanoid.Died:Connect(function()
-		option_Freecam_Toggle.ChangeValue(0)
-		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+	pcall(function()
+		char.Humanoid.Died:Connect(function()
+			option_Freecam_Toggle.ChangeValue(0)
+			workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+		end)
 	end)
 end)
 
