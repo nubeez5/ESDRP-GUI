@@ -1,3 +1,17 @@
+local windowMinimized = false
+
+local windowWidth = 350
+local windowHeight = 230
+
+
+
+
+
+
+
+
+
+
 -- Tables
 local deletedPartsHistory = {}
 
@@ -110,11 +124,11 @@ local function UndoDeletedPart()
 end
 
 -- Create Gui
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 gui.Name = RandomString(50)
 gui.ResetOnSpawn = false
 
-local espGui = Instance.new("ScreenGui", game.CoreGui)
+local espGui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
@@ -149,7 +163,7 @@ frame.ImageColor3 = Color3.fromRGB(60, 60, 60)
 frame.ScaleType = Enum.ScaleType.Slice
 frame.SliceCenter = Rect.new(Vector2.new(100, 100), Vector2.new(100, 100))
 frame.SliceScale = 0.04
-frame.Size = UDim2.new(0, 350, 0, 224)
+frame.Size = UDim2.new(0, windowWidth, 0, windowHeight)
 frame.BackgroundTransparency = 1
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -694,6 +708,28 @@ end)
 
 frame.MouseWheelBackward:Connect(function()
 	options.CanvasPosition = Vector2.new(0, options.CanvasPosition.Y + 25)
+end)
+
+-- Enable Disable
+miniButton.MouseButton1Click:Connect(function()
+	if windowMinimized then
+		windowMinimized = false
+		
+		options.Visible = true
+		frame.Size = UDim2.new(0, windowWidth, 0, windowHeight)
+	else
+		windowMinimized = true
+		
+		options.Visible = false
+		frame.Size = UDim2.new(0, windowWidth, 0, 18)
+	end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+	gui:Destroy()
+	espGui:Destroy()
+	
+	script:Destroy()
 end)
 
 -- Freecam
