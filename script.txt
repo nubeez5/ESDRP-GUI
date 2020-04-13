@@ -5,7 +5,8 @@ local keybind_ToggleGui = Enum.KeyCode.F4
 
 
 
-
+-- Tables
+local deletedPartsHistory = {}
 
 
 -- Other Variables
@@ -14,7 +15,7 @@ local rng = Random.new()
 
 local inputService = game:GetService("UserInputService")
 
-local deletedParts = {}
+
 
 -- Functions
 local function SendNotification(title, text)
@@ -64,14 +65,6 @@ local function TextToNumber(text)
 	return typeof(tonumber(text)) == "number" and tonumber(text) or 0
 end
 
-local function GetActualPlayerName(name)
-    for _, v in pairs(game.Players:GetPlayers()) do
-        if string.find(string.lower(v.Name), string.lower(name)) then
-            return v.name
-        end
-    end
-end
-
 local function TeleportToCamera(args)
 	if game.Players.LocalPlayer.Character then
 		game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(workspace.CurrentCamera.CFrame)
@@ -86,17 +79,6 @@ local function RemoveNLR()
 	end
 end
 
-local function UndoDeletedParts()
-	for _, info in pairs(deletedParts) do
-		if info[1] ~= nil then
-			info[1].CFrame = info[2]
-			info[1].Anchored = info[3]
-		end
-	end
-	
-	deletedParts = {}
-end
-
 local function GiveDeleteTool()
 	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
 	tool.Name = "Delete Tool"
@@ -105,34 +87,35 @@ local function GiveDeleteTool()
 	tool.Equipped:Connect(function(mouse)
 		mouse.Button1Down:Connect(function()
 			if mouse.Target then
-				if mouse.Target:IsA("BasePart") then
-					table.insert(deletedParts, {mouse.Target, mouse.Target.CFrame, mouse.Target.Anchored})
-					mouse.Target.CFrame = CFrame.new(0, 1000000, 0)
-				end
+				local i = #deletedPartsHistory + 1
+				deletedPartsHistory[i] = {mouse.Target, mouse.Target.CFrame, mouse.Target.Anchored}
+				
+				mouse.Target.Anchored = true
+				mouse.Target.CFrame = CFrame.new(rng:NextInteger(-1000000, 1000000), 1000000, rng:NextInteger(-1000000, 1000000))
 			end
 		end)
 	end)
 end
 
-local function SellToolInHand(target, price)
-	local tool = nil
+local function UndoDeletedPart()
+	local lastIndex = #deletedPartsHistory
 	
-	for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-		if v:IsA("Tool") then
-			tool = v
+	repeat
+		local info = deletedPartsHistory[lastIndex]
+		
+		if info and #deletedPartsHistory > 0 then
+			if info[1] ~= nil then
+				info[1].CFrame = info[2]
+				info[1].Anchored = info[3]
+				
+				deletedPartsHistory[lastIndex] = nil
+				
+				break
+			end
 		end
-	end
-	
-	if tool then
-		game.ReplicatedStorage.Events.MenuActionEvent:FireServer(
-			19,
-			game.Players[GetActualPlayerName(target)],
-			{
-				tool,
-				price
-			}
-		)
-	end
+		
+		lastIndex = lastIndex - 1
+	until lastIndex <= 0
 end
 
 -- Create Gui
@@ -236,6 +219,7 @@ options.ScrollBarThickness = 0
 options.CanvasSize = UDim2.new(0, 0, 0, 10000)
 options.BorderSizePixel = 0
 options.ScrollingEnabled = false
+options.Active = true
 
 local options_List = Instance.new("UIListLayout", options)
 options_List.SortOrder = Enum.SortOrder.LayoutOrder
@@ -569,8 +553,6 @@ AddPadding(options, 14, "ESP")
 local option_ESP_Enabled = CreateOption(options, "ESP_Enabled", "Enabled")
 local option_ESP_Enabled_Slider = CreateSlider(option_ESP_Enabled, 130, 205, "True", "False", false)
 
-AddPadding(options, 4, "")
-
 -- Refresh Rate
 AddPadding(options, 4, "")
 
@@ -597,6 +579,14 @@ local option_ESP_Entities_Slider = CreateSlider(option_ESP_Entities, 130, 205, "
 local option_ESP_Printers = CreateOption(options, "ESP_Printers", "Printers Shown")
 local option_ESP_Printers_Slider = CreateSlider(option_ESP_Printers, 130, 205, "True", "False", false)
 
+-- Vehicles Shown
+local option_ESP_Vehicles = CreateOption(options, "ESP_Vehicles", "Vehicles Shown")
+local option_ESP_Vehicles_Slider = CreateSlider(option_ESP_Vehicles, 130, 205, "True", "False", false)
+
+-- Scavenges Shown
+local option_ESP_Scavenges = CreateOption(options, "ESP_Scavenges", "Scavenges Shown")
+local option_ESP_Scavenges_Slider = CreateSlider(option_ESP_Scavenges, 130, 205, "True", "False", false)
+
 ---- Tracers
 AddPadding(options, 4, "")
 AddPadding(options, 14, "ESP -> Tracers")
@@ -605,9 +595,8 @@ AddPadding(options, 14, "ESP -> Tracers")
 local option_ESP_Tracers_Enabled = CreateOption(options, "ESP_Tracers_Enabled", "Tracers Enabled")
 local option_ESP_Tracers_Enabled_Slider = CreateSlider(option_ESP_Tracers_Enabled, 130, 205, "True", "False", false)
 
-AddPadding(options, 4, "")
-
 -- Freecam
+AddPadding(options, 4, "")
 AddPadding(options, 14, "Freecam")
 
 -- Freecam Enable
@@ -625,16 +614,18 @@ local option_Freecam_TeleportHereButton = CreateOption(options, "Freecam_Telepor
 CreateButton(option_Freecam_TeleportHereButton, 130, 205, "Teleport", TeleportToCamera)
 
 -- Misc.
+AddPadding(options, 4, "")
 AddPadding(options, 14, "Misc")
 
 local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
 CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
 
-local option_DestroyParts = CreateOption(options, "ESP_DestroyParts_Give", "Give Delete Tool")
+local option_DestroyParts = CreateOption(options, "ESP_DestroyParts_Enabled", "Give Delete Tool")
 local option_DestroyParts_Button = CreateButton(option_DestroyParts, 130, 205, "Give", GiveDeleteTool)
 
-local option_UndoDestroyParts = CreateOption(options, "ESP_UndoDestroyParts_Enabled", "Undo Deleted Parts")
-local option_UndoDestroyParts_Button = CreateButton(option_UndoDestroyParts, 130, 205, "Undo", UndoDeletedParts)
+AddPadding(options, 4, "")
+local option_DestroyPartsUndo = CreateOption(options, "ESP_DestroyPartsUndo", "Undo Deleted Parts")
+local option_DestroyPartsUndo_Button = CreateButton(option_DestroyPartsUndo, 130, 205, "Undo", UndoDeletedPart)
 
 
 -- Extra Info
@@ -708,9 +699,9 @@ inputService.InputBegan:Connect(function(input)
 			freecamVelocity = freecamVelocity + Vector3.new(-1, 0, 0)
 		elseif input.KeyCode == Enum.KeyCode.D then
 			freecamVelocity = freecamVelocity + Vector3.new(1, 0, 0)
-		elseif input.KeyCode == Enum.KeyCode.E then
+		elseif input.KeyCode == Enum.KeyCode.Space then
 			freecamVelocity = freecamVelocity + Vector3.new(0, 1, 0)
-		elseif input.KeyCode == Enum.KeyCode.Q then
+		elseif input.KeyCode == Enum.KeyCode.LeftShift then
 			freecamVelocity = freecamVelocity + Vector3.new(0, -1, 0)
 		end
 	end
@@ -730,9 +721,9 @@ inputService.InputEnded:Connect(function(input)
 			freecamVelocity = freecamVelocity - Vector3.new(-1, 0, 0)
 		elseif input.KeyCode == Enum.KeyCode.D then
 			freecamVelocity = freecamVelocity - Vector3.new(1, 0, 0)
-		elseif input.KeyCode == Enum.KeyCode.E then
+		elseif input.KeyCode == Enum.KeyCode.Space then
 			freecamVelocity = freecamVelocity - Vector3.new(0, 1, 0)
-		elseif input.KeyCode == Enum.KeyCode.Q then
+		elseif input.KeyCode == Enum.KeyCode.LeftShift then
 			freecamVelocity = freecamVelocity - Vector3.new(0, -1, 0)
 		end
 	end
@@ -877,7 +868,7 @@ while true do
 						end
 						
 						if child ~= "NIL" then
-							profile.AdditionalText = " : [ " .. entity[child].Money.Value .. " money left ][ " .. entity[child].Uses.Value .. " uses left ]"
+							profile.AdditionalText = "[ " .. entity[child].Money.Value .. " money left ][ " .. entity[child].Uses.Value .. " uses left ]"
 							
 							if entity.TrueOwner.Locked.Value == false then
 								profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
@@ -885,6 +876,45 @@ while true do
 								profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
 							end
 						end
+						
+						table.insert(profiles, profile)
+					end
+				end
+			end
+			
+			-- Vehicles
+			if option_ESP_Vehicles_Slider.GetValue() == "True" then
+				if workspace:FindFirstChild("Vehicles") then
+					for _, entity in pairs(workspace.Vehicles:GetChildren()) do
+						local profile = {}
+						profile.Name = entity.Name
+						profile.Parts = entity:GetDescendants()
+						profile.Model = entity
+						
+						profile.Type = "Other"
+						profile.AdditionalText = ""
+						
+						
+						if entity:FindFirstChild("TrueOwner") then
+							profile.AdditionalText = profile.AdditionalText .. "[ Owner: " .. entity.TrueOwner.Value.Name .. " ]"
+						end
+						
+						table.insert(profiles, profile)
+					end
+				end
+			end
+			
+			-- Scavenges
+			if option_ESP_Scavenges_Slider.GetValue() == "True" then
+				if workspace:FindFirstChild("Scavage") then
+					for _, entity in pairs(workspace.Scavage:GetChildren()) do
+						local profile = {}
+						profile.Name = entity.Name
+						profile.Parts = entity:GetDescendants()
+						profile.Model = entity
+						
+						profile.Type = "Other"
+						profile.AdditionalText = ""
 						
 						table.insert(profiles, profile)
 					end
@@ -961,20 +991,20 @@ while true do
 				local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
 				local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
 				local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
-
+				
 				local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
 				local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
 				local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
 				local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
-
+				
 				t = {c1, c2, c3, c4, c5, c6, c7, c8}
-
+				
 				for _, v in pairs(t) do
 					local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
-
+					
 					min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
 					max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
-
+					
 					if onScreen == false then
 						totalOnScreen = false
 					end
@@ -1000,7 +1030,7 @@ while true do
 					for _, v in pairs(t) do
 						local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
 						p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
-
+						
 						if onScreen == false then
 							onScreenTotal = false
 						end
@@ -1043,9 +1073,9 @@ while true do
 			freecamVelocity = Vector3.new(0, 0, 0)
 			cam.CameraType = Enum.CameraType.Custom
 			
-			game:GetService("ContextActionService"):BindActionAtPriority("WASDEQKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.E, Enum.KeyCode.Q, Enum.KeyCode.Space)
+			game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
 		elseif freecamEnabled == "True" then
-			game:GetService("ContextActionService"):BindActionAtPriority("WASDEQKeys", function() return Enum.ContextActionResult.Sink end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.E, Enum.KeyCode.Q, Enum.KeyCode.Space)
+			game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Sink end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
 		end
 	end
 	
