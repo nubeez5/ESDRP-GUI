@@ -127,8 +127,8 @@ local espGui = Instance.new("ScreenGui", game.CoreGui)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
-local espStorage = Instance.new("Folder", espGui)
-espStorage.Name = "ESP_Storage"
+local tempStorage = Instance.new("Folder", espGui)
+tempStorage.Name = "TempStorage"
 
 local mouseIcon = Instance.new("Frame", gui)
 mouseIcon.Name = "MouseIcon"
@@ -559,7 +559,7 @@ AddPadding(options, 4, "")
 local option_ESP_Line_RefreshRate = CreateOption(options, "ESP_Line_RefreshRate", "Refresh Rate [ms]")
 local option_ESP_Line_RefreshRate_Value = CreateValue(option_ESP_Line_RefreshRate, 130, 205)
 
-option_ESP_Line_RefreshRate_Value.Text = 25
+option_ESP_Line_RefreshRate_Value.Text = 1
 
 -- Name Tags Enabled
 local option_ESP_NameTag = CreateOption(options, "ESP_NameTag", "Name Tags Enabled")
@@ -586,6 +586,14 @@ local option_ESP_Vehicles_Slider = CreateSlider(option_ESP_Vehicles, 130, 205, "
 -- Scavenges Shown
 local option_ESP_Scavenges = CreateOption(options, "ESP_Scavenges", "Scavenges Shown")
 local option_ESP_Scavenges_Slider = CreateSlider(option_ESP_Scavenges, 130, 205, "True", "False", false)
+
+-- Loot Boxes Shown
+local option_ESP_LootBoxes = CreateOption(options, "ESP_LootBoxes", "LootBoxes Shown")
+local option_ESP_LootBoxes_Slider = CreateSlider(option_ESP_LootBoxes, 130, 205, "True", "False", false)
+
+-- Materials Shown
+local option_ESP_Materials = CreateOption(options, "ESP_Materials", "Materials Shown")
+local option_ESP_Materials_Slider = CreateSlider(option_ESP_Materials, 130, 205, "True", "False", false)
 
 ---- Tracers
 AddPadding(options, 4, "")
@@ -769,7 +777,7 @@ while true do
 	
 	-- ESP
 	if tick() - lastTick > esp_RefreshRate then
-		for _, v in pairs(espStorage:GetChildren()) do
+		for _, v in pairs(tempStorage:GetChildren()) do
 			v:Destroy()
 		end
 	end
@@ -896,7 +904,17 @@ while true do
 						
 						
 						if entity:FindFirstChild("TrueOwner") then
-							profile.AdditionalText = profile.AdditionalText .. "[ Owner: " .. entity.TrueOwner.Value.Name .. " ]"
+							if entity.TrueOwner.Value ~= nil then
+								profile.AdditionalText = profile.AdditionalText .. "[ Owner: " .. entity.TrueOwner.Value.Name .. " ]"
+								
+								if entity:FindFirstChild("TrueOwner") then
+									if entity.TrueOwner.Locked.Value == false then
+										profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+									else
+										profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+									end
+								end
+							end
 						end
 						
 						table.insert(profiles, profile)
@@ -908,6 +926,40 @@ while true do
 			if option_ESP_Scavenges_Slider.GetValue() == "True" then
 				if workspace:FindFirstChild("Scavage") then
 					for _, entity in pairs(workspace.Scavage:GetChildren()) do
+						local profile = {}
+						profile.Name = entity.Name
+						profile.Parts = entity:GetDescendants()
+						profile.Model = entity
+						
+						profile.Type = "Other"
+						profile.AdditionalText = ""
+						
+						table.insert(profiles, profile)
+					end
+				end
+			end
+			
+			-- Loot Boxes
+			if option_ESP_LootBoxes_Slider.GetValue() == "True" then
+				if workspace:FindFirstChild("Loot") then
+					for _, entity in pairs(workspace.Loot:GetChildren()) do
+						local profile = {}
+						profile.Name = entity.Name
+						profile.Parts = entity:GetDescendants()
+						profile.Model = entity
+						
+						profile.Type = "Other"
+						profile.AdditionalText = ""
+						
+						table.insert(profiles, profile)
+					end
+				end
+			end
+			
+			-- Materials
+			if option_ESP_Materials_Slider.GetValue() == "True" then
+				if workspace:FindFirstChild("Materials") then
+					for _, entity in pairs(workspace.Materials:GetChildren()) do
 						local profile = {}
 						profile.Name = entity.Name
 						profile.Parts = entity:GetDescendants()
@@ -962,7 +1014,7 @@ while true do
 							local v = p2 - p1
 							local v2 = v / 2
 							
-							local line = Instance.new("Frame", espGui.ESP_Storage)
+							local line = Instance.new("Frame", tempStorage)
 							line.Name = "Line"
 							line.BackgroundColor3 = Color3.new(1, 1, 1)
 							line.BackgroundTransparency = 0.4
@@ -1015,7 +1067,7 @@ while true do
 					local center = (max + min) / 2
 					
 					local box = espHitboxImage_Template:Clone()
-					box.Parent = espStorage
+					box.Parent = tempStorage
 					box.Size = UDim2.new(0, size.X, 0, size.Y)
 					box.Position = UDim2.new(0, center.X, 0, center.Y)
 					box.ImageColor3 = Color3.new(1, 1, 1)
@@ -1039,7 +1091,7 @@ while true do
 					if onScreenTotal then
 						p2 = p2 + Vector2.new(0, 10)
 						
-						local label = Instance.new("TextLabel", espGui.ESP_Storage)
+						local label = Instance.new("TextLabel", tempStorage)
 						label.Name = "NameLabel"
 						label.BackgroundTransparency = 1
 						label.Active = false
