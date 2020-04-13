@@ -15,8 +15,6 @@ local rng = Random.new()
 
 local inputService = game:GetService("UserInputService")
 
-
-
 -- Functions
 local function SendNotification(title, text)
 	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
@@ -563,7 +561,7 @@ option_ESP_Line_RefreshRate_Value.Text = 1
 
 -- Name Tags Enabled
 local option_ESP_NameTag = CreateOption(options, "ESP_NameTag", "Name Tags Enabled")
-local option_ESP_NameTag_Slider = CreateSlider(option_ESP_NameTag, 130, 205, "True", "False", false)
+local option_ESP_NameTag_Slider = CreateSlider(option_ESP_NameTag, 130, 205, "True", "False", true)
 
 AddPadding(options, 4, "")
 
