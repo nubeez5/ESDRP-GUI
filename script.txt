@@ -1,10 +1,3 @@
--- Keybinds
-local keybind_ToggleGui = Enum.KeyCode.F4
-
-
-
-
-
 -- Tables
 local deletedPartsHistory = {}
 
@@ -149,7 +142,6 @@ espHitboxImage_Template.BorderSizePixel = 0
 espHitboxImage_Template.AnchorPoint = Vector2.new(0.5, 0.5)
 
 
-
 local frame = Instance.new("ImageLabel", gui)
 frame.Name = "Background"
 frame.Image = "rbxassetid://3570695787"
@@ -169,6 +161,24 @@ dragHandle.Size = UDim2.new(1, 0, 0, 18)
 dragHandle.Position = UDim2.new(0, 0, 0, 1)
 dragHandle.Text = ""
 
+local closeButton = Instance.new("ImageButton", dragHandle)
+closeButton.Name = "CloseButton"
+closeButton.Image = "rbxassetid://4389749368"
+closeButton.Size = UDim2.new(0, 12, 0, 12)
+closeButton.AnchorPoint = Vector2.new(0, 0.5)
+closeButton.BackgroundTransparency = 1
+closeButton.AutoButtonColor = false
+closeButton.Position = UDim2.new(1, -18, 0.5, -1)
+
+local miniButton = Instance.new("ImageButton", dragHandle)
+miniButton.Name = "MinimizeButton"
+miniButton.Image = "rbxassetid://4530358017"
+miniButton.Size = UDim2.new(0, 12, 0, 12)
+miniButton.AnchorPoint = Vector2.new(0, 0.5)
+miniButton.BackgroundTransparency = 1
+miniButton.AutoButtonColor = false
+miniButton.Position = UDim2.new(1, -37, 0.5, -1)
+
 local title = Instance.new("TextLabel", frame)
 title.Name = "Title"
 title.BackgroundTransparency = 1
@@ -179,17 +189,6 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextSize = 16
 title.Position = UDim2.new(0, 8, 0, 1)
 title.Text = "ESDRP GUI"
-
-local titleToggleKey = Instance.new("TextLabel", frame)
-titleToggleKey.Name = "TitleToggleKeyNotice"
-titleToggleKey.BackgroundTransparency = 1
-titleToggleKey.Size = UDim2.new(1, 0, 0, 16)
-titleToggleKey.Font = Enum.Font.GothamSemibold
-titleToggleKey.TextColor3 = Color3.new(1, 1, 1)
-titleToggleKey.TextXAlignment = Enum.TextXAlignment.Left
-titleToggleKey.TextSize = 12
-titleToggleKey.Position = UDim2.new(0, 233, 0, 1)
-titleToggleKey.Text = "F4 To Toggle Menu"
 
 local titleBorder = Instance.new("Frame", frame)
 titleBorder.Name = "TitleBorder"
@@ -752,12 +751,6 @@ end)
 -- Script
 local step = 0
 local lastTick = tick()
-
-game:GetService("UserInputService").InputBegan:Connect(function(key)
-	if key.KeyCode == keybind_ToggleGui then
-		gui.Enabled = not gui.Enabled
-	end
-end)
 
 -- Disable Freecam when dead
 if localPlayer.Character then
