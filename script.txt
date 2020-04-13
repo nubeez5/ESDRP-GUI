@@ -810,7 +810,7 @@ while true do
 						if plr:FindFirstChild("PlayerData") then
 							local plrData = plr.PlayerData
 							local currency = plrData.Currency.Value
-							local karma = plr.Karma.Value
+							local karma = plrData.Karma.Value
 							
 							profile.AdditionalText = profile.AdditionalText .. "[ Money: " .. tostring(currency) .. " ]"
 							profile.AdditionalText = profile.AdditionalText .. "[ Karma: " .. tostring(karma) .. " ]"
