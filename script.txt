@@ -119,11 +119,11 @@ local function UndoDeletedPart()
 end
 
 -- Create Gui
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 gui.Name = RandomString(50)
 gui.ResetOnSpawn = false
 
-local espGui = Instance.new("ScreenGui", game.CoreGui)
+local espGui = Instance.new("ScreenGui", localPlayer.PlayerGui)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
@@ -669,11 +669,21 @@ end)
 frame.MouseEnter:Connect(function()
 	mouseIcon.Visible = true
 	
+	local oMin = localPlayer.CameraMinZoomDistance
+	local oMax = localPlayer.CameraMaxZoomDistance
+	
+	local currentZoom = (workspace.CurrentCamera.Focus.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
+	localPlayer.CameraMinZoomDistance = currentZoom
+	localPlayer.CameraMaxZoomDistance = currentZoom
+	
 	repeat
 		mouseIcon.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
 		
 		game:GetService("RunService").RenderStepped:Wait()
 	until mouseIcon.Visible == false
+	
+	localPlayer.CameraMinZoomDistance = oMin
+	localPlayer.CameraMaxZoomDistance = oMax
 end)
 
 frame.MouseLeave:Connect(function()
