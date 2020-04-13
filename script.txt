@@ -811,7 +811,7 @@ while true do
 							local plrData = plr.PlayerData
 							local currency = plrData.Currency.Value
 							local karma = plrData.Karma.Value
-							
+							--asd
 							profile.AdditionalText = profile.AdditionalText .. "[ Money: " .. tostring(currency) .. " ]"
 							profile.AdditionalText = profile.AdditionalText .. "[ Karma: " .. tostring(karma) .. " ]"
 						end
