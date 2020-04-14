@@ -857,9 +857,12 @@ while true do
 							
 							if plr.Character:FindFirstChild("NameTag") then
 								local tag = plr.Character.NameTag
-								local color = tag.TextLabel.TextColor3
 								
-								profile.TextColor = color
+								if tag:FindFirstChild("TextLabel") then
+									local color = tag.TextLabel.TextColor3
+									
+									profile.TextColor = color
+								end
 							end
 							
 							table.insert(profiles, profile)
