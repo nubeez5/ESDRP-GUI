@@ -697,8 +697,6 @@ frame.MouseEnter:Connect(function()
 		
 		game:GetService("RunService").RenderStepped:Wait()
 	until mouseIcon.Visible == false
-	
-	print("End")
 end)
 
 frame.MouseLeave:Connect(function()
@@ -729,6 +727,9 @@ miniButton.MouseButton1Click:Connect(function()
 		
 		options.Visible = false
 		frame.Size = UDim2.new(0, windowWidth, 0, 18)
+		
+		localPlayer.CameraMinZoomDistance = original_CamMinZoom
+		localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
 	end
 end)
 
@@ -737,6 +738,9 @@ closeButton.MouseButton1Click:Connect(function()
 	espGui:Destroy()
 	
 	scriptEnabled = false
+	
+	localPlayer.CameraMinZoomDistance = original_CamMinZoom
+	localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
 end)
 
 -- Freecam
