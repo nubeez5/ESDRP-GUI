@@ -742,6 +742,12 @@ closeButton.MouseButton1Click:Connect(function()
 	
 	localPlayer.CameraMinZoomDistance = original_CamMinZoom
 	localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
+	
+	if localPlayer.Backpack:FindFirstChild("Delete Tool") then
+		localPlayer.Backpack["Delete Tool"]:Destroy()
+	elseif localPlayer.Character:FindFirstChild("Delete Tool") then
+		localPlayer.Character["Delete Tool"]:Destroy()
+	end
 end)
 
 -- Freecam
