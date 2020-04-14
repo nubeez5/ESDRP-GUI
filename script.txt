@@ -25,8 +25,8 @@ local rng = Random.new()
 local inputService = game:GetService("UserInputService")
 
 
-local original_CamMinZoom = localPlayer.CameraMinZoomDistance
-local original_CamMaxZoom = localPlayer.CameraMaxZoomDistance
+local original_CamMinZoom = 0
+local original_CamMaxZoom = 1024
 
 local scriptEnabled = true
 
