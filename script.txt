@@ -3,6 +3,8 @@ local windowMinimized = false
 local windowWidth = 350
 local windowHeight = 230
 
+local guiParent = game.CoreGui
+
 
 
 
@@ -25,6 +27,8 @@ local inputService = game:GetService("UserInputService")
 
 local original_CamMinZoom = localPlayer.CameraMinZoomDistance
 local original_CamMaxZoom = localPlayer.CameraMaxZoomDistance
+
+local scriptEnabled = true
 
 -- Functions
 local function SendNotification(title, text)
@@ -128,11 +132,11 @@ local function UndoDeletedPart()
 end
 
 -- Create Gui
-local gui = Instance.new("ScreenGui", game.CoreGui)
+local gui = Instance.new("ScreenGui", guiParent)
 gui.Name = RandomString(50)
 gui.ResetOnSpawn = false
 
-local espGui = Instance.new("ScreenGui", game.CoreGui)
+local espGui = Instance.new("ScreenGui", guiParent)
 espGui.Name = RandomString(50)
 espGui.ResetOnSpawn = false
 
@@ -732,7 +736,7 @@ closeButton.MouseButton1Click:Connect(function()
 	gui:Destroy()
 	espGui:Destroy()
 	
-	script.Disabled = true
+	scriptEnabled = false
 end)
 
 -- Freecam
@@ -811,413 +815,417 @@ localPlayer.CharacterAdded:Connect(function(char)
 end)
 
 while true do
-	local dt = game:GetService("RunService").RenderStepped:Wait()
-	step = step + 1
-	
-	local refreshRateValue = TextToNumber(option_ESP_Line_RefreshRate_Value.Text)
-	local esp_RefreshRate = refreshRateValue / 1000
-	
-	-- ESP
-	if tick() - lastTick > esp_RefreshRate then
-		for _, v in pairs(tempStorage:GetChildren()) do
-			v:Destroy()
-		end
-	end
-			
-	if option_ESP_Enabled_Slider.GetValue() == "True" then
+	if scriptEnabled then
+		local dt = game:GetService("RunService").RenderStepped:Wait()
+		step = step + 1
+		
+		local refreshRateValue = TextToNumber(option_ESP_Line_RefreshRate_Value.Text)
+		local esp_RefreshRate = refreshRateValue / 1000
+		
 		-- ESP
-		local profiles = {}
-		
-		-- Players
-		if option_ESP_ShowPlayers_Slider.GetValue() == "True" then
-			for _, plr in pairs(game.Players:GetPlayers()) do
-				if plr.Character and plr.Name ~= localPlayer.Name then
-					if plr.Character:FindFirstChild("Humanoid") then
-						local profile = {}
-						profile.Name = plr.Name
-						profile.Parts = plr.Character:GetDescendants()
-						profile.Model = plr.Character
-						
-						profile.AdditionalText = ""
-						profile.Type = "Player"
-						
-						if plr:FindFirstChild("PlayerData") then
-							local plrData = plr.PlayerData
-							local currency = plrData.Currency.Value
-							local karma = plrData.Karma.Value
-							
-							profile.AdditionalText = profile.AdditionalText .. "[ Money: " .. tostring(currency) .. " ]"
-							profile.AdditionalText = profile.AdditionalText .. "[ Karma: " .. tostring(karma) .. " ]"
-						end
-						
-						if plr.Character:FindFirstChild("NameTag") then
-							local tag = plr.Character.NameTag
-							local color = tag.TextLabel.TextColor3
-							
-							profile.TextColor = color
-						end
-						
-						table.insert(profiles, profile)
-					end
-				end
+		if tick() - lastTick > esp_RefreshRate then
+			for _, v in pairs(tempStorage:GetChildren()) do
+				v:Destroy()
 			end
 		end
-		
-		-- Electric State
-		if game.PlaceId == 2262441883 then
-			-- Entities
-			if option_ESP_Entities_Slider.GetValue() == "True" then
-				if workspace:FindFirstChild("Entities") then
-					for _, entity in pairs(workspace.Entities:GetChildren()) do
-						local profile = {}
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.AdditionalText = ""
-						profile.Type = "Other"
-						
-						
-						local child = "NIL"
-						
-						if entity:FindFirstChild("Int") then
-							child = "Int"
-						elseif entity:FindFirstChild("Int2") then
-							child = "Int2"
-						end
-						
-						if entity.Name == "Gun" then
-							profile.Name = entity[child].Value
-							
-							if entity[child]:FindFirstChild("Uses") then
-								profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
-							end
-						else
-							profile.Name = entity.Name
-							
-							if entity[child]:FindFirstChild("Uses") then
-								profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
-							end
-						end
-						
-						if entity:FindFirstChild("TrueOwner") then
-							if entity.TrueOwner.Locked.Value == false then
-								profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
-							else
-								profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
-							end
-						end
-						
-						table.insert(profiles, profile)
-					end
-				end
-			end
+				
+		if option_ESP_Enabled_Slider.GetValue() == "True" then
+			-- ESP
+			local profiles = {}
 			
-			-- Printers
-			if option_ESP_Printers_Slider.GetValue() == "True" then
-				if workspace:FindFirstChild("MoneyPrinters") then
-					for _, entity in pairs(workspace.MoneyPrinters:GetChildren()) do
-						local profile = {}
-						profile.Name = entity.Name
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.AdditionalText = ""
-						profile.Type = "Other"
-						
-						
-						local child = "NIL"
-						
-						if entity:FindFirstChild("Int") then
-							child = "Int"
-						elseif entity:FindFirstChild("Int2") then
-							child = "Int2"
-						end
-						
-						if child ~= "NIL" then
-							profile.AdditionalText = "[ " .. entity[child].Money.Value .. " money left ][ " .. entity[child].Uses.Value .. " uses left ]"
+			-- Players
+			if option_ESP_ShowPlayers_Slider.GetValue() == "True" then
+				for _, plr in pairs(game.Players:GetPlayers()) do
+					if plr.Character and plr.Name ~= localPlayer.Name then
+						if plr.Character:FindFirstChild("Humanoid") then
+							local profile = {}
+							profile.Name = plr.Name
+							profile.Parts = plr.Character:GetDescendants()
+							profile.Model = plr.Character
 							
-							if entity.TrueOwner.Locked.Value == false then
-								profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
-							else
-								profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
-							end
-						end
-						
-						table.insert(profiles, profile)
-					end
-				end
-			end
-			
-			-- Vehicles
-			if option_ESP_Vehicles_Slider.GetValue() == "True" then
-				if workspace:FindFirstChild("Vehicles") then
-					for _, entity in pairs(workspace.Vehicles:GetChildren()) do
-						local profile = {}
-						profile.Name = entity.Name
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.Type = "Other"
-						profile.AdditionalText = ""
-						
-						
-						if entity:FindFirstChild("TrueOwner") then
-							if entity.TrueOwner.Value ~= nil then
-								profile.AdditionalText = profile.AdditionalText .. "[ Owner: " .. entity.TrueOwner.Value.Name .. " ]"
+							profile.AdditionalText = ""
+							profile.Type = "Player"
+							
+							if plr:FindFirstChild("PlayerData") then
+								local plrData = plr.PlayerData
+								local currency = plrData.Currency.Value
+								local karma = plrData.Karma.Value
 								
-								if entity:FindFirstChild("TrueOwner") then
-									if entity.TrueOwner.Locked.Value == false then
-										profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
-									else
-										profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+								profile.AdditionalText = profile.AdditionalText .. "[ Money: " .. tostring(currency) .. " ]"
+								profile.AdditionalText = profile.AdditionalText .. "[ Karma: " .. tostring(karma) .. " ]"
+							end
+							
+							if plr.Character:FindFirstChild("NameTag") then
+								local tag = plr.Character.NameTag
+								local color = tag.TextLabel.TextColor3
+								
+								profile.TextColor = color
+							end
+							
+							table.insert(profiles, profile)
+						end
+					end
+				end
+			end
+			
+			-- Electric State
+			if game.PlaceId == 2262441883 then
+				-- Entities
+				if option_ESP_Entities_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Entities") then
+						for _, entity in pairs(workspace.Entities:GetChildren()) do
+							local profile = {}
+							profile.Parts = entity:GetDescendants()
+							profile.Model = entity
+							
+							profile.AdditionalText = ""
+							profile.Type = "Other"
+							
+							
+							local child = "NIL"
+							
+							if entity:FindFirstChild("Int") then
+								child = "Int"
+							elseif entity:FindFirstChild("Int2") then
+								child = "Int2"
+							end
+							
+							if entity.Name == "Gun" then
+								profile.Name = entity[child].Value
+								
+								if entity[child]:FindFirstChild("Uses") then
+									profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
+								end
+							else
+								profile.Name = entity.Name
+								
+								if entity[child]:FindFirstChild("Uses") then
+									profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
+								end
+							end
+							
+							if entity:FindFirstChild("TrueOwner") then
+								if entity.TrueOwner.Locked.Value == false then
+									profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+								else
+									profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+								end
+							end
+							
+							table.insert(profiles, profile)
+						end
+					end
+				end
+				
+				-- Printers
+				if option_ESP_Printers_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("MoneyPrinters") then
+						for _, entity in pairs(workspace.MoneyPrinters:GetChildren()) do
+							local profile = {}
+							profile.Name = entity.Name
+							profile.Parts = entity:GetDescendants()
+							profile.Model = entity
+							
+							profile.AdditionalText = ""
+							profile.Type = "Other"
+							
+							
+							local child = "NIL"
+							
+							if entity:FindFirstChild("Int") then
+								child = "Int"
+							elseif entity:FindFirstChild("Int2") then
+								child = "Int2"
+							end
+							
+							if child ~= "NIL" then
+								profile.AdditionalText = "[ " .. entity[child].Money.Value .. " money left ][ " .. entity[child].Uses.Value .. " uses left ]"
+								
+								if entity.TrueOwner.Locked.Value == false then
+									profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+								else
+									profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+								end
+							end
+							
+							table.insert(profiles, profile)
+						end
+					end
+				end
+				
+				-- Vehicles
+				if option_ESP_Vehicles_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Vehicles") then
+						for _, entity in pairs(workspace.Vehicles:GetChildren()) do
+							local profile = {}
+							profile.Name = entity.Name
+							profile.Parts = entity:GetDescendants()
+							profile.Model = entity
+							
+							profile.Type = "Other"
+							profile.AdditionalText = ""
+							
+							
+							if entity:FindFirstChild("TrueOwner") then
+								if entity.TrueOwner.Value ~= nil then
+									profile.AdditionalText = profile.AdditionalText .. "[ Owner: " .. entity.TrueOwner.Value.Name .. " ]"
+									
+									if entity:FindFirstChild("TrueOwner") then
+										if entity.TrueOwner.Locked.Value == false then
+											profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+										else
+											profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+										end
 									end
 								end
 							end
-						end
-						
-						table.insert(profiles, profile)
-					end
-				end
-			end
-			
-			-- Scavenges
-			if option_ESP_Scavenges_Slider.GetValue() == "True" then
-				if workspace:FindFirstChild("Scavage") then
-					for _, entity in pairs(workspace.Scavage:GetChildren()) do
-						local profile = {}
-						profile.Name = entity.Name
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.Type = "Other"
-						profile.AdditionalText = ""
-						
-						table.insert(profiles, profile)
-					end
-				end
-			end
-			
-			-- Loot Boxes
-			if option_ESP_LootBoxes_Slider.GetValue() == "True" then
-				if workspace:FindFirstChild("Loot") then
-					for _, entity in pairs(workspace.Loot:GetChildren()) do
-						local profile = {}
-						profile.Name = entity.Name
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.Type = "Other"
-						profile.AdditionalText = ""
-						
-						table.insert(profiles, profile)
-					end
-				end
-			end
-			
-			-- Materials
-			if option_ESP_Materials_Slider.GetValue() == "True" then
-				if workspace:FindFirstChild("Materials") then
-					for _, entity in pairs(workspace.Materials:GetChildren()) do
-						local profile = {}
-						profile.Name = entity.Name
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.Type = "Other"
-						profile.AdditionalText = ""
-						
-						table.insert(profiles, profile)
-					end
-				end
-			end
-		end
-		
-		-- Refresh
-		if tick() - lastTick > esp_RefreshRate then
-			for _, profile in pairs(profiles) do
-				-- Char Info
-				local profile_Name = profile.Name
-				local profile_Model = profile.Model
-				local profile_Parts = profile.Parts
-				local profile_Type = profile.Type
-				
-				local profile_BasepartsCount = 0
-				
-				
-				for _, x in pairs(profile_Parts) do
-					if x:IsA("BasePart") then
-						profile_BasepartsCount = profile_BasepartsCount + 1
-					end
-				end
-				
-				local BB_Position, BB_Size = profile_Model:GetBoundingBox()
-				BB_Size = BB_Size / 2
-				
-				local distanceToProfile = (BB_Position.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
-				
-				
-				-- ESP
-				if option_ESP_Tracers_Enabled_Slider.GetValue() == "True" then
-					if localPlayer.Character then
-						local xSize = workspace.CurrentCamera.ViewportSize.X
-						local ySize = workspace.CurrentCamera.ViewportSize.Y - 36
-						
-						local p1 = workspace.CurrentCamera:WorldToScreenPoint(workspace.CurrentCamera:ScreenPointToRay(xSize / 2, ySize).Origin)
-						local p2, onScreen = workspace.CurrentCamera:WorldToScreenPoint(BB_Position.Position)
-						
-						p1 = Vector2.new(p1.X, p1.Y)
-						p2 = Vector2.new(p2.X, p2.Y)
-						
-						if onScreen then
-							local v = p2 - p1
-							local v2 = v / 2
 							
-							local line = Instance.new("Frame", tempStorage)
-							line.Name = "Line"
-							line.BackgroundColor3 = Color3.new(1, 1, 1)
-							line.BackgroundTransparency = 0.4
-							line.BorderSizePixel = 0
-							line.Size = UDim2.new(0, v.Magnitude + 1, 0, 1) -- LAST VALUE IS THICKNESS
-							line.Position = UDim2.new(((p1.X + (v.X / 2)) - (line.AbsoluteSize.X / 2)) / xSize, 0, 
-													  ((p1.Y + (v.Y / 2)) - (line.AbsoluteSize.Y / 2)) / ySize, 0)
-							line.Rotation = math.deg(math.atan2(v.Y, v.X))
+							table.insert(profiles, profile)
 						end
 					end
 				end
 				
-				local p1 = workspace.CurrentCamera:WorldToScreenPoint(BB_Position.Position)
-				local p2 = Vector2.new(p1.X, -math.huge)
-				
-				local s = BB_Size
-				
-				-- ESP Hitbox
-				local min = Vector2.new(math.huge, math.huge)
-				local max = Vector2.new(-math.huge, -math.huge)
-				
-				local t = {}
-				local totalOnScreen = true
-				
-				local c1 = BB_Position * CFrame.new(s.X, s.Y, s.Z).Position
-				local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
-				local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
-				local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
-				
-				local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
-				local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
-				local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
-				local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
-				
-				t = {c1, c2, c3, c4, c5, c6, c7, c8}
-				
-				for _, v in pairs(t) do
-					local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
-					
-					min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
-					max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
-					
-					if onScreen == false then
-						totalOnScreen = false
+				-- Scavenges
+				if option_ESP_Scavenges_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Scavage") then
+						for _, entity in pairs(workspace.Scavage:GetChildren()) do
+							local profile = {}
+							profile.Name = entity.Name
+							profile.Parts = entity:GetDescendants()
+							profile.Model = entity
+							
+							profile.Type = "Other"
+							profile.AdditionalText = ""
+							
+							table.insert(profiles, profile)
+						end
 					end
 				end
 				
-				if totalOnScreen then
-					local size = max - min
-					local center = (max + min) / 2
-					
-					local box = espHitboxImage_Template:Clone()
-					box.Parent = tempStorage
-					box.Size = UDim2.new(0, size.X, 0, size.Y)
-					box.Position = UDim2.new(0, center.X, 0, center.Y)
-					box.ImageColor3 = Color3.new(1, 1, 1)
-					box.ImageTransparency = 0
-					box.SliceScale = 1 / 4 -- SYNTAX: [THICKNESS] / 4
+				-- Loot Boxes
+				if option_ESP_LootBoxes_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Loot") then
+						for _, entity in pairs(workspace.Loot:GetChildren()) do
+							local profile = {}
+							profile.Name = entity.Name
+							profile.Parts = entity:GetDescendants()
+							profile.Model = entity
+							
+							profile.Type = "Other"
+							profile.AdditionalText = ""
+							
+							table.insert(profiles, profile)
+						end
+					end
 				end
 				
-				-- Stats
-				if option_ESP_NameTag_Slider.GetValue() == "True" then
-					local onScreenTotal = true
+				-- Materials
+				if option_ESP_Materials_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Materials") then
+						for _, entity in pairs(workspace.Materials:GetChildren()) do
+							local profile = {}
+							profile.Name = entity.Name
+							profile.Parts = entity:GetDescendants()
+							profile.Model = entity
+							
+							profile.Type = "Other"
+							profile.AdditionalText = ""
+							
+							table.insert(profiles, profile)
+						end
+					end
+				end
+			end
+			
+			-- Refresh
+			if tick() - lastTick > esp_RefreshRate then
+				for _, profile in pairs(profiles) do
+					-- Char Info
+					local profile_Name = profile.Name
+					local profile_Model = profile.Model
+					local profile_Parts = profile.Parts
+					local profile_Type = profile.Type
+					
+					local profile_BasepartsCount = 0
+					
+					
+					for _, x in pairs(profile_Parts) do
+						if x:IsA("BasePart") then
+							profile_BasepartsCount = profile_BasepartsCount + 1
+						end
+					end
+					
+					local BB_Position, BB_Size = profile_Model:GetBoundingBox()
+					BB_Size = BB_Size / 2
+					
+					local distanceToProfile = (BB_Position.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
+					
+					
+					-- ESP
+					if option_ESP_Tracers_Enabled_Slider.GetValue() == "True" then
+						if localPlayer.Character then
+							local xSize = workspace.CurrentCamera.ViewportSize.X
+							local ySize = workspace.CurrentCamera.ViewportSize.Y - 36
+							
+							local p1 = workspace.CurrentCamera:WorldToScreenPoint(workspace.CurrentCamera:ScreenPointToRay(xSize / 2, ySize).Origin)
+							local p2, onScreen = workspace.CurrentCamera:WorldToScreenPoint(BB_Position.Position)
+							
+							p1 = Vector2.new(p1.X, p1.Y)
+							p2 = Vector2.new(p2.X, p2.Y)
+							
+							if onScreen then
+								local v = p2 - p1
+								local v2 = v / 2
+								
+								local line = Instance.new("Frame", tempStorage)
+								line.Name = "Line"
+								line.BackgroundColor3 = Color3.new(1, 1, 1)
+								line.BackgroundTransparency = 0.4
+								line.BorderSizePixel = 0
+								line.Size = UDim2.new(0, v.Magnitude + 1, 0, 1) -- LAST VALUE IS THICKNESS
+								line.Position = UDim2.new(((p1.X + (v.X / 2)) - (line.AbsoluteSize.X / 2)) / xSize, 0, 
+														  ((p1.Y + (v.Y / 2)) - (line.AbsoluteSize.Y / 2)) / ySize, 0)
+								line.Rotation = math.deg(math.atan2(v.Y, v.X))
+							end
+						end
+					end
+					
+					local p1 = workspace.CurrentCamera:WorldToScreenPoint(BB_Position.Position)
+					local p2 = Vector2.new(p1.X, -math.huge)
+					
+					local s = BB_Size
+					
+					-- ESP Hitbox
+					local min = Vector2.new(math.huge, math.huge)
+					local max = Vector2.new(-math.huge, -math.huge)
+					
+					local t = {}
+					local totalOnScreen = true
+					
+					local c1 = BB_Position * CFrame.new(s.X, s.Y, s.Z).Position
+					local c2 = BB_Position * CFrame.new(-s.X, s.Y, s.Z).Position
+					local c3 = BB_Position * CFrame.new(-s.X, s.Y, -s.Z).Position
+					local c4 = BB_Position * CFrame.new(s.X, s.Y, -s.Z).Position
+					
+					local c5 = BB_Position * CFrame.new(s.X, -s.Y, s.Z).Position
+					local c6 = BB_Position * CFrame.new(-s.X, -s.Y, s.Z).Position
+					local c7 = BB_Position * CFrame.new(-s.X, -s.Y, -s.Z).Position
+					local c8 = BB_Position * CFrame.new(s.X, -s.Y, -s.Z).Position
+					
+					t = {c1, c2, c3, c4, c5, c6, c7, c8}
 					
 					for _, v in pairs(t) do
 						local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
-						p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
+						
+						min = Vector2.new(math.min(min.X, pos.X), math.min(min.Y, pos.Y))
+						max = Vector2.new(math.max(max.X, pos.X), math.max(max.Y, pos.Y))
 						
 						if onScreen == false then
-							onScreenTotal = false
+							totalOnScreen = false
 						end
 					end
 					
-					if onScreenTotal then
-						p2 = p2 + Vector2.new(0, 10)
+					if totalOnScreen then
+						local size = max - min
+						local center = (max + min) / 2
 						
-						local label = Instance.new("TextLabel", tempStorage)
-						label.Name = "NameLabel"
-						label.BackgroundTransparency = 1
-						label.Active = false
-						label.AnchorPoint = Vector2.new(0.5, 0.5)
-						label.Font = Enum.Font.GothamSemibold
-						label.TextColor3 = Color3.new(1, 1, 1)
-						label.TextSize = 9
+						local box = espHitboxImage_Template:Clone()
+						box.Parent = tempStorage
+						box.Size = UDim2.new(0, size.X, 0, size.Y)
+						box.Position = UDim2.new(0, center.X, 0, center.Y)
+						box.ImageColor3 = Color3.new(1, 1, 1)
+						box.ImageTransparency = 0
+						box.SliceScale = 1 / 4 -- SYNTAX: [THICKNESS] / 4
+					end
+					
+					-- Stats
+					if option_ESP_NameTag_Slider.GetValue() == "True" then
+						local onScreenTotal = true
 						
-						local addText = profile.AdditionalText ~= nil and profile.AdditionalText or ""
+						for _, v in pairs(t) do
+							local pos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(v)
+							p2 = Vector2.new(p1.X, math.max(p2.Y, pos.Y))
+							
+							if onScreen == false then
+								onScreenTotal = false
+							end
+						end
 						
-						label.Text = "[ " .. profile_Name .. " ][ " .. math.floor(distanceToProfile) .. " studs ]" .. addText
-						
-						label.Size = UDim2.new(0, 500, 0, 20)
-						label.Position = UDim2.new(0, p2.X, 0, p2.Y)
-						
-						if profile.TextColor ~= nil then
-							label.TextColor3 = profile.TextColor
-						else
+						if onScreenTotal then
+							p2 = p2 + Vector2.new(0, 10)
+							
+							local label = Instance.new("TextLabel", tempStorage)
+							label.Name = "NameLabel"
+							label.BackgroundTransparency = 1
+							label.Active = false
+							label.AnchorPoint = Vector2.new(0.5, 0.5)
+							label.Font = Enum.Font.GothamSemibold
 							label.TextColor3 = Color3.new(1, 1, 1)
+							label.TextSize = 9
+							
+							local addText = profile.AdditionalText ~= nil and profile.AdditionalText or ""
+							
+							label.Text = "[ " .. profile_Name .. " ][ " .. math.floor(distanceToProfile) .. " studs ]" .. addText
+							
+							label.Size = UDim2.new(0, 500, 0, 20)
+							label.Position = UDim2.new(0, p2.X, 0, p2.Y)
+							
+							if profile.TextColor ~= nil then
+								label.TextColor3 = profile.TextColor
+							else
+								label.TextColor3 = Color3.new(1, 1, 1)
+							end
 						end
 					end
 				end
+				
+				lastTick = tick()
+			end
+		end
+		
+		-- Freecam
+		local freecamEnabled = option_Freecam_Toggle.GetValue()
+		local cam = workspace.CurrentCamera
+		
+		if previous_FreecamEnabled ~= freecamEnabled then
+			-- State Changed
+			
+			if freecamEnabled == "False" then
+				freecamVelocity = Vector3.new(0, 0, 0)
+				cam.CameraType = Enum.CameraType.Custom
+				
+				game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
+			elseif freecamEnabled == "True" then
+				game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Sink end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
+			end
+		end
+		
+		if freecamEnabled == "True" then
+			if freecamEngaged then
+				inputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
+				
+				local delta = inputService:GetMouseDelta()
+				local sens = inputService.MouseDeltaSensitivity
+				
+				local x = delta.X * (sens * sens * 15)
+				local y = delta.Y * (sens * sens * 15)
+				
+				freecamRotation = freecamRotation + Vector2.new(math.rad(x), math.rad(y))
+			else
+				inputService.MouseBehavior = Enum.MouseBehavior.Default
 			end
 			
-			lastTick = tick()
-		end
-	end
-	
-	-- Freecam
-	local freecamEnabled = option_Freecam_Toggle.GetValue()
-	local cam = workspace.CurrentCamera
-	
-	if previous_FreecamEnabled ~= freecamEnabled then
-		-- State Changed
-		
-		if freecamEnabled == "False" then
-			freecamVelocity = Vector3.new(0, 0, 0)
-			cam.CameraType = Enum.CameraType.Custom
 			
-			game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
-		elseif freecamEnabled == "True" then
-			game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Sink end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
-		end
-	end
-	
-	if freecamEnabled == "True" then
-		if freecamEngaged then
-			inputService.MouseBehavior = Enum.MouseBehavior.LockCurrentPosition
+			local speed = TextToNumber(option_Freecam_Speed_Value.Text)
 			
-			local delta = inputService:GetMouseDelta()
-			local sens = inputService.MouseDeltaSensitivity
+			cam.CameraType = Enum.CameraType.Scriptable
+			cam.CFrame = cam.CFrame * CFrame.new(freecamVelocity.Unit * dt * speed)
 			
-			local x = delta.X * (sens * sens * 15)
-			local y = delta.Y * (sens * sens * 15)
-			
-			freecamRotation = freecamRotation + Vector2.new(math.rad(x), math.rad(y))
-		else
-			inputService.MouseBehavior = Enum.MouseBehavior.Default
+			cam.CFrame = CFrame.new(cam.CFrame.Position) * CFrame.fromOrientation(-math.rad(freecamRotation.Y), -math.rad(freecamRotation.X), 0)
 		end
 		
-		
-		local speed = TextToNumber(option_Freecam_Speed_Value.Text)
-		
-		cam.CameraType = Enum.CameraType.Scriptable
-		cam.CFrame = cam.CFrame * CFrame.new(freecamVelocity.Unit * dt * speed)
-		
-		cam.CFrame = CFrame.new(cam.CFrame.Position) * CFrame.fromOrientation(-math.rad(freecamRotation.Y), -math.rad(freecamRotation.X), 0)
+		previous_FreecamEnabled = freecamEnabled
+	else
+		break
 	end
-	
-	previous_FreecamEnabled = freecamEnabled
 end
