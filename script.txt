@@ -22,6 +22,10 @@ local rng = Random.new()
 
 local inputService = game:GetService("UserInputService")
 
+
+local original_CamMinZoom = localPlayer.CameraMinZoomDistance
+local original_CamMaxZoom = localPlayer.CameraMaxZoomDistance
+
 -- Functions
 local function SendNotification(title, text)
 	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
@@ -583,7 +587,7 @@ local option_ESP_ShowPlayers = CreateOption(options, "ESP_ShowPlayers", "Players
 local option_ESP_ShowPlayers_Slider = CreateSlider(option_ESP_ShowPlayers, 130, 205, "True", "False", true)
 
 -- Entities Shown
-local option_ESP_Entities = CreateOption(options, "ESP_Entities", "Entities Shown")
+local option_ESP_Entities = CreateOption(options, "ESP_Entities", "Shipments/Items Shown")
 local option_ESP_Entities_Slider = CreateSlider(option_ESP_Entities, 130, 205, "True", "False", false)
 
 -- Printers Shown
@@ -680,9 +684,6 @@ end)
 frame.MouseEnter:Connect(function()
 	mouseIcon.Visible = true
 	
-	local oMin = localPlayer.CameraMinZoomDistance
-	local oMax = localPlayer.CameraMaxZoomDistance
-	
 	local currentZoom = (workspace.CurrentCamera.Focus.Position - workspace.CurrentCamera.CFrame.Position).Magnitude
 	localPlayer.CameraMinZoomDistance = currentZoom
 	localPlayer.CameraMaxZoomDistance = currentZoom
@@ -693,12 +694,14 @@ frame.MouseEnter:Connect(function()
 		game:GetService("RunService").RenderStepped:Wait()
 	until mouseIcon.Visible == false
 	
-	localPlayer.CameraMinZoomDistance = oMin
-	localPlayer.CameraMaxZoomDistance = oMax
+	print("End")
 end)
 
 frame.MouseLeave:Connect(function()
 	mouseIcon.Visible = false
+	
+	localPlayer.CameraMinZoomDistance = original_CamMinZoom
+	localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
 end)
 
 -- Custom Scrolling
@@ -729,7 +732,7 @@ closeButton.MouseButton1Click:Connect(function()
 	gui:Destroy()
 	espGui:Destroy()
 	
-	script:Destroy()
+	script.Disabled = true
 end)
 
 -- Freecam
