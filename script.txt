@@ -1038,6 +1038,14 @@ while true do
 							profile.Type = "Other"
 							profile.AdditionalText = ""
 							
+							if entity:FindFirstChild("TrueOwner") then
+								if entity.TrueOwner.Locked.Value == false then
+									profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+								else
+									profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+								end
+							end
+							
 							table.insert(profiles, profile)
 						end
 					end
