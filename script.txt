@@ -737,6 +737,7 @@ closeButton.MouseButton1Click:Connect(function()
 	gui:Destroy()
 	espGui:Destroy()
 	
+	workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 	scriptEnabled = false
 	
 	localPlayer.CameraMinZoomDistance = original_CamMinZoom
@@ -1211,6 +1212,9 @@ while true do
 				
 				game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
 			elseif freecamEnabled == "True" then
+				local c = cam.CFrame
+				cam.CameraType = Enum.CameraType.Scriptable
+				cam.CFrame = c
 				game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Sink end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
 			end
 		end
@@ -1233,9 +1237,7 @@ while true do
 			
 			local speed = TextToNumber(option_Freecam_Speed_Value.Text)
 			
-			cam.CameraType = Enum.CameraType.Scriptable
 			cam.CFrame = cam.CFrame * CFrame.new(freecamVelocity.Unit * dt * speed)
-			
 			cam.CFrame = CFrame.new(cam.CFrame.Position) * CFrame.fromOrientation(-math.rad(freecamRotation.Y), -math.rad(freecamRotation.X), 0)
 		end
 		
