@@ -110,6 +110,45 @@ local function GiveDeleteTool()
 	end)
 end
 
+local function GiveRecallTool()
+	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
+	tool.Name = "Recaller Tool"
+	tool.RequiresHandle = false
+	
+	local savedPosition = nil
+	local equipped = false
+	
+	tool.Equipped:Connect(function(mouse)
+		equipped = true
+		
+		mouse.Button1Down:Connect(function()
+			if savedPosition ~= nil then
+				if localPlayer.Character then
+					localPlayer.Character:SetPrimaryPartCFrame(savedPosition)
+					
+					game.StarterGui:SetCore("SendNotification", {Title = "Recaller Success", Text = "You teleported!"})
+				else
+					game.StarterGui:SetCore("SendNotification", {Title = "Recaller Failed", Text = "You haven't spawned in yet!"})
+				end
+			else
+				game.StarterGui:SetCore("SendNotification", {Title = "Recaller Failed", Text = "You haven't set a position!"})
+			end
+		end)
+	end) 
+	
+	tool.Unequipped:Connect(function()
+		equipped = false
+	end)
+	
+	game:GetService("UserInputService").InputBegan:Connect(function(key)
+		if key.KeyCode == Enum.KeyCode.V and equipped == true then
+			if localPlayer.Character then
+				savedPosition = localPlayer.Character:GetPrimaryPartCFrame()
+			end
+		end
+	end)
+end
+
 local function UndoDeletedPart()
 	local lastIndex = #deletedPartsHistory
 	
@@ -742,12 +781,6 @@ closeButton.MouseButton1Click:Connect(function()
 	
 	localPlayer.CameraMinZoomDistance = original_CamMinZoom
 	localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
-	
-	if localPlayer.Backpack:FindFirstChild("Delete Tool") then
-		localPlayer.Backpack["Delete Tool"]:Destroy()
-	elseif localPlayer.Character:FindFirstChild("Delete Tool") then
-		localPlayer.Character["Delete Tool"]:Destroy()
-	end
 end)
 
 -- Freecam
@@ -904,13 +937,13 @@ while true do
 								child = "Int2"
 							end
 							
-							if entity.Name == "Gun" and child ~= "NIL" then
+							if entity.Name == "Gun" then
 								profile.Name = entity[child].Value
 								
 								if entity[child]:FindFirstChild("Uses") then
 									profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
 								end
-							elseif child ~= "NIL" then
+							else
 								profile.Name = entity.Name
 								
 								if entity[child]:FindFirstChild("Uses") then
