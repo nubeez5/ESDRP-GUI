@@ -144,6 +144,11 @@ local function GiveRecallTool()
 		if key.KeyCode == Enum.KeyCode.V and equipped == true then
 			if localPlayer.Character then
 				savedPosition = localPlayer.Character:GetPrimaryPartCFrame()
+				
+				
+				game.StarterGui:SetCore("SendNotification", {Title = "Recaller Success", Text = "Successfully saved position!"})
+			else
+				game.StarterGui:SetCore("SendNotification", {Title = "Recaller Failed", Text = "You haven't spawned in yet!"})
 			end
 		end
 	end)
