@@ -875,6 +875,9 @@ while true do
 		local refreshRateValue = TextToNumber(option_ESP_Line_RefreshRate_Value.Text)
 		local esp_RefreshRate = refreshRateValue / 1000
 		
+		-- Enable Backpack even when holding printers(not specifically)
+		game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+		
 		-- ESP
 		if tick() - lastTick > esp_RefreshRate then
 			for _, v in pairs(tempStorage:GetChildren()) do
