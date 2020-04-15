@@ -686,13 +686,14 @@ AddPadding(options, 14, "Misc")
 local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
 CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
 
+AddPadding(options, 4, "")
 local option_GiveRecallTool = CreateOption(options, "ESP_GiveRecallTool", "Give Recall Tool")
 local option_GiveRecallTool_Button = CreateButton(option_GiveRecallTool, 130, 205, "Give", GiveRecallTool)
 
+AddPadding(options, 4, "")
 local option_GiveDeleteTool = CreateOption(options, "ESP_GiveDestroyTool", "Give Delete Tool")
 local option_GiveDeleteTool_Button = CreateButton(option_GiveDeleteTool, 130, 205, "Give", GiveDeleteTool)
 
-AddPadding(options, 4, "")
 local option_DestroyPartsUndo = CreateOption(options, "ESP_DestroyPartsUndo", "Undo Deleted Parts")
 local option_DestroyPartsUndo_Button = CreateButton(option_DestroyPartsUndo, 130, 205, "Undo", UndoDeletedPart)
 
