@@ -6,7 +6,8 @@ local windowHeight = 230
 local guiParent = game.CoreGui
 
 
-
+-- Keybinds
+local aimbot_Key = Enum.KeyCode.C
 
 
 
@@ -28,7 +29,9 @@ local inputService = game:GetService("UserInputService")
 local original_CamMinZoom = 0
 local original_CamMaxZoom = 1024
 
+-- States
 local scriptEnabled = true
+local aimbotEnabled = false
 
 -- Functions
 local function SendNotification(title, text)
@@ -173,6 +176,100 @@ local function UndoDeletedPart()
 		
 		lastIndex = lastIndex - 1
 	until lastIndex <= 0
+end
+
+-- Time
+local function MakeDay()
+	game.Lighting.Ambient = Color3.fromRGB(78, 80, 89)
+	game.Lighting.Brightness = 1.85
+	
+	game.Lighting.ColorShift_Bottom = Color3.fromRGB(95, 114, 138)
+	game.Lighting.ColorShift_Top = Color3.fromRGB(195, 195, 195)
+	
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(185, 178, 167)
+	game.Lighting.ClockTime = 12
+	game.Lighting.FogColor = Color3.fromRGB(255, 247, 234)
+	game.Lighting.FogEnd = 40000
+	game.Lighting.FogStart = 0
+	
+	game.Lighting.Bloom.Enabled = false
+	
+	game.Lighting.SunRays.Intensity = 0.25
+	game.Lighting.SunRays.Spread = 1
+	
+	game.Lighting.Condition.Value = "Day"
+	
+	-- Sky
+	game.Lighting.Sky.SkyboxBk = "rbxassetid://2677179366"
+	game.Lighting.Sky.SkyboxDn = "rbxassetid://501313275"
+	game.Lighting.Sky.SkyboxFt = "rbxassetid://2677179602"
+	game.Lighting.Sky.SkyboxLf = "rbxassetid://2677179822"
+	game.Lighting.Sky.SkyboxRt = "rbxassetid://2677179738"
+	game.Lighting.Sky.SkyboxUp = "rbxassetid://247087559"
+	
+	game.StarterGui:SetCore("SendNotification", {Title = "Success!", Text = "Changed to 'Day'"})
+end
+
+local function MakeNight()
+	game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
+	game.Lighting.Brightness = 0
+	
+	game.Lighting.ColorShift_Bottom = Color3.fromRGB(95, 114, 138)
+	game.Lighting.ColorShift_Top = Color3.fromRGB(0, 0, 0)
+	
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(31, 46, 75)
+	game.Lighting.ClockTime = 17.08
+	game.Lighting.FogColor = Color3.fromRGB(31, 46, 75)
+	game.Lighting.FogEnd = 2000
+	game.Lighting.FogStart = 0
+	
+	game.Lighting.Bloom.Enabled = true
+	
+	game.Lighting.SunRays.Intensity = 0.04
+	game.Lighting.SunRays.Spread = 1.2
+	
+	game.Lighting.Condition.Value = "Night"
+	
+	-- Sky
+	game.Lighting.Sky.SkyboxBk = "rbxassetid://2695798966"
+	game.Lighting.Sky.SkyboxDn = "rbxassetid://213221473"
+	game.Lighting.Sky.SkyboxFt = "rbxassetid://220789557"
+	game.Lighting.Sky.SkyboxLf = "rbxassetid://220789543"
+	game.Lighting.Sky.SkyboxRt = "rbxassetid://220789524"
+	game.Lighting.Sky.SkyboxUp = "rbxassetid://220789575"
+	
+	game.StarterGui:SetCore("SendNotification", {Title = "Success!", Text = "Changed to 'Night'"})
+end
+
+local function MakeMorning()
+	game.Lighting.Ambient = Color3.fromRGB(78, 80, 89)
+	game.Lighting.Brightness = 0.25
+	
+	game.Lighting.ColorShift_Bottom = Color3.fromRGB(95, 114, 138)
+	game.Lighting.ColorShift_Top = Color3.fromRGB(244, 173, 85)
+	
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(35, 45, 61)
+	game.Lighting.ClockTime = 6.7
+	game.Lighting.FogColor = Color3.fromRGB(81, 107, 112)
+	game.Lighting.FogEnd = 40000
+	game.Lighting.FogStart = 0
+	
+	game.Lighting.Bloom.Enabled = false
+	
+	game.Lighting.SunRays.Intensity = 0.25
+	game.Lighting.SunRays.Spread = 1
+	
+	game.Lighting.Condition.Value = "Day"
+	
+	-- Sky
+	game.Lighting.Sky.SkyboxBk = "rbxassetid://253027015"
+	game.Lighting.Sky.SkyboxDn = "rbxassetid://253027058"
+	game.Lighting.Sky.SkyboxFt = "rbxassetid://253027039"
+	game.Lighting.Sky.SkyboxLf = "rbxassetid://253027029"
+	game.Lighting.Sky.SkyboxRt = "rbxassetid://253026999"
+	game.Lighting.Sky.SkyboxUp = "rbxassetid://253027050"
+	
+	game.StarterGui:SetCore("SendNotification", {Title = "Success!", Text = "Changed to 'Morning'"})
 end
 
 -- Create Gui
@@ -658,6 +755,14 @@ local option_ESP_LootBoxes_Slider = CreateSlider(option_ESP_LootBoxes, 130, 205,
 local option_ESP_Materials = CreateOption(options, "ESP_Materials", "Materials Shown")
 local option_ESP_Materials_Slider = CreateSlider(option_ESP_Materials, 130, 205, "True", "False", false)
 
+-- Dispensers Shown
+local option_ESP_Dispensers = CreateOption(options, "ESP_Dispensers", "Dispensers Shown")
+local option_ESP_Dispensers_Slider = CreateSlider(option_ESP_Dispensers, 130, 205, "True", "False", false)
+
+-- Banks Shown
+local option_ESP_Banks = CreateOption(options, "ESP_Banks", "Banks Shown")
+local option_ESP_Banks_Slider = CreateSlider(option_ESP_Banks, 130, 205, "True", "False", false)
+
 ---- Tracers
 AddPadding(options, 4, "")
 AddPadding(options, 14, "ESP -> Tracers")
@@ -666,7 +771,15 @@ AddPadding(options, 14, "ESP -> Tracers")
 local option_ESP_Tracers_Enabled = CreateOption(options, "ESP_Tracers_Enabled", "Tracers Enabled")
 local option_ESP_Tracers_Enabled_Slider = CreateSlider(option_ESP_Tracers_Enabled, 130, 205, "True", "False", false)
 
--- Freecam
+---- Aimbot
+AddPadding(options, 4, "")
+AddPadding(options, 14, "Aimbot")
+
+-- Aimbot Enabled
+local option_Player_Aimbot_Enabled = CreateOption(options, "ESP_Player_Aimbot_Enabled", "Player Aimbot Enabled")
+local option_Player_Aimbot_Enabled_Slider = CreateSlider(option_Player_Aimbot_Enabled, 130, 205, "True", "False", false)
+
+---- Freecam
 AddPadding(options, 4, "")
 AddPadding(options, 14, "Freecam")
 
@@ -683,6 +796,19 @@ option_Freecam_Speed_Value.Text = 100
 -- Teleport Here
 local option_Freecam_TeleportHereButton = CreateOption(options, "Freecam_TeleportHere", "Teleport Here")
 CreateButton(option_Freecam_TeleportHereButton, 130, 205, "Teleport", TeleportToCamera)
+
+---- Time
+AddPadding(options, 4, "")
+AddPadding(options, 14, "Time")
+
+local option_SetToDay = CreateOption(options, "ESP_SetToDay", "Change To Day")
+local option_SetToDay_Button = CreateButton(option_SetToDay, 130, 205, "Change", MakeDay)
+
+local option_SetToNight = CreateOption(options, "ESP_SetToNight", "Change To Night")
+local option_SetToNight_Button = CreateButton(option_SetToNight, 130, 205, "Change", MakeNight)
+
+local option_SetToMorning = CreateOption(options, "ESP_SetToMorning", "Change To Morning")
+local option_SetToMorning_Button = CreateButton(option_SetToMorning, 130, 205, "Change", MakeMorning)
 
 -- Misc.
 AddPadding(options, 4, "")
@@ -782,14 +908,7 @@ miniButton.MouseButton1Click:Connect(function()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-	gui:Destroy()
-	espGui:Destroy()
-	
-	workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
 	scriptEnabled = false
-	
-	localPlayer.CameraMinZoomDistance = original_CamMinZoom
-	localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
 end)
 
 -- Freecam
@@ -820,6 +939,40 @@ inputService.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
 		freecamEngaged = true
 	end
+	
+	if input.KeyCode == aimbot_Key and option_Player_Aimbot_Enabled_Slider.GetValue() == "True" then
+		aimbotEnabled = true
+		
+		repeat
+			local closestPart = nil
+			local closestDistance = math.huge
+			
+			for _, p in pairs(game.Players:GetPlayers()) do
+				if p.Character and p.Name ~= localPlayer.Name then
+					if p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
+						local camPos = workspace.CurrentCamera.CFrame.Position
+						local targetPart = p.Character.HumanoidRootPart
+						
+						local a = workspace.CurrentCamera.CFrame.LookVector
+						local b = -CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position).LookVector
+						
+						local d = a:Dot(b)
+						
+						if d < closestDistance then
+							closestDistance = d
+							closestPart = targetPart
+						end
+					end
+				end
+			end
+			
+			if closestPart then
+				workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, closestPart.Position)
+			end
+			
+			game:GetService("RunService").RenderStepped:Wait()
+		until aimbotEnabled == false
+	end
 end)
 
 inputService.InputEnded:Connect(function(input)
@@ -841,6 +994,10 @@ inputService.InputEnded:Connect(function(input)
 	
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
 		freecamEngaged = false
+	end
+	
+	if input.KeyCode == aimbot_Key then
+		aimbotEnabled = false
 	end
 end)
 
@@ -867,9 +1024,10 @@ localPlayer.CharacterAdded:Connect(function(char)
 	end)
 end)
 
+local dt = 1 / 60
+
 while true do
 	if scriptEnabled then
-		local dt = game:GetService("RunService").RenderStepped:Wait()
 		step = step + 1
 		
 		local refreshRateValue = TextToNumber(option_ESP_Line_RefreshRate_Value.Text)
@@ -1102,6 +1260,54 @@ while true do
 						end
 					end
 				end
+				
+				-- Dispensers
+				if option_ESP_Dispensers_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Buildings") then
+						for _, building in pairs(workspace.Buildings:GetChildren()) do
+							for _, dispenser in pairs(building:GetChildren()) do
+								if dispenser.Name == "Dispencer" then
+									local profile = {}
+									profile.Name = "Dispenser"
+									profile.Model = dispenser
+									
+									profile.Type = "Other"
+									profile.AdditionalText = ""
+									
+									if dispenser:FindFirstChild("Dispencer") then
+										if string.len(dispenser.Dispencer.Value) == 0 then
+											profile.AdditionalText = profile.AdditionalText .. "[ EMPTY ]"
+										else
+											profile.AdditionalText = profile.AdditionalText .. "[ " .. dispenser.Dispencer.Value .. " ][ Price: " .. dispenser.Dispencer.Price.Value .. " ][ " .. dispenser.Dispencer.Count.Value .. " left ]"
+										end
+									end
+									
+									table.insert(profiles, profile)
+								end
+							end
+						end
+					end
+				end
+				
+				-- Bank
+				if option_ESP_Banks_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Buildings") then
+						for _, building in pairs(workspace.Buildings:GetChildren()) do
+							for _, bank in pairs(building:GetChildren()) do
+								if bank.Name == "Banker Vault" then
+									local profile = {}
+									profile.Name = "Bank"
+									profile.Model = bank
+									
+									profile.Type = "Other"
+									profile.AdditionalText = ""
+									
+									table.insert(profiles, profile)
+								end
+							end
+						end
+					end
+				end
 			end
 			
 			-- Refresh
@@ -1116,9 +1322,11 @@ while true do
 					local profile_BasepartsCount = 0
 					
 					
-					for _, x in pairs(profile_Parts) do
-						if x:IsA("BasePart") then
-							profile_BasepartsCount = profile_BasepartsCount + 1
+					if profile_Parts then
+						for _, x in pairs(profile_Parts) do
+							if x:IsA("BasePart") then
+								profile_BasepartsCount = profile_BasepartsCount + 1
+							end
 						end
 					end
 					
@@ -1293,7 +1501,18 @@ while true do
 		end
 		
 		previous_FreecamEnabled = freecamEnabled
+		dt = game:GetService("RunService").RenderStepped:Wait()
 	else
+		gui:Destroy()
+		espGui:Destroy()
+		
+		game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
+		
+		workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+		
+		localPlayer.CameraMinZoomDistance = original_CamMinZoom
+		localPlayer.CameraMaxZoomDistance = original_CamMaxZoom
+		
 		break
 	end
 end
