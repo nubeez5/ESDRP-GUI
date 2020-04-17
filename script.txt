@@ -137,7 +137,7 @@ local function GiveRecallTool()
 				game.StarterGui:SetCore("SendNotification", {Title = "Recaller Failed", Text = "You haven't set a position!"})
 			end
 		end)
-	end) 
+	end)
 	
 	tool.Unequipped:Connect(function()
 		equipped = false
@@ -776,8 +776,11 @@ AddPadding(options, 4, "")
 AddPadding(options, 14, "Aimbot")
 
 -- Aimbot Enabled
-local option_Player_Aimbot_Enabled = CreateOption(options, "ESP_Player_Aimbot_Enabled", "Player Aimbot Enabled")
+local option_Player_Aimbot_Enabled = CreateOption(options, "ESP_Player_Aimbot_Enabled", "Player Aimbot Enabled [C]")
 local option_Player_Aimbot_Enabled_Slider = CreateSlider(option_Player_Aimbot_Enabled, 130, 205, "True", "False", false)
+
+local option_Player_Aimbot_FlaggedOnly = CreateOption(options, "ESP_Player_Aimbot_FlaggedOnly", "Red names only")
+local option_Player_Aimbot_FlaggedOnly_Slider = CreateSlider(option_Player_Aimbot_FlaggedOnly, 130, 205, "True", "False", false)
 
 ---- Freecam
 AddPadding(options, 4, "")
@@ -882,11 +885,11 @@ end)
 
 -- Custom Scrolling
 frame.MouseWheelForward:Connect(function()
-	options.CanvasPosition = Vector2.new(0, options.CanvasPosition.Y - 25)
+	options.CanvasPosition = Vector2.new(0, options.CanvasPosition.Y - 40)
 end)
 
 frame.MouseWheelBackward:Connect(function()
-	options.CanvasPosition = Vector2.new(0, options.CanvasPosition.Y + 25)
+	options.CanvasPosition = Vector2.new(0, options.CanvasPosition.Y + 40)
 end)
 
 -- Enable Disable
@@ -950,17 +953,31 @@ inputService.InputBegan:Connect(function(input)
 			for _, p in pairs(game.Players:GetPlayers()) do
 				if p.Character and p.Name ~= localPlayer.Name then
 					if p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
-						local camPos = workspace.CurrentCamera.CFrame.Position
-						local targetPart = p.Character.HumanoidRootPart
+						local checked = false
 						
-						local a = workspace.CurrentCamera.CFrame.LookVector
-						local b = -CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position).LookVector
+						if option_Player_Aimbot_FlaggedOnly_Slider.GetValue() == "True" then
+							if p.Character:FindFirstChild("NameTag") then
+								if p.Character.NameTag.TextLabel.TextColor3 == Color3.fromRGB(255, 33, 33) then
+									checked = true
+								end
+							end
+						else
+							checked = true
+						end
 						
-						local d = a:Dot(b)
-						
-						if d < closestDistance then
-							closestDistance = d
-							closestPart = targetPart
+						if checked then
+							local camPos = workspace.CurrentCamera.CFrame.Position
+							local targetPart = p.Character.HumanoidRootPart
+							
+							local a = workspace.CurrentCamera.CFrame.LookVector
+							local b = -CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position).LookVector
+							
+							local d = a:Dot(b)
+							
+							if d < closestDistance then
+								closestDistance = d
+								closestPart = targetPart
+							end
 						end
 					end
 				end
@@ -1474,6 +1491,7 @@ while true do
 				local c = cam.CFrame
 				cam.CameraType = Enum.CameraType.Scriptable
 				cam.CFrame = c
+				
 				game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Sink end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
 			end
 		end
