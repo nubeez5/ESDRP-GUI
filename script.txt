@@ -99,7 +99,7 @@ local function HideName()
     game.ReplicatedStorage.Events.MenuActionEvent:FireServer(
         8,
         {
-            "",
+            "DOG",
             "",
             false
         }
