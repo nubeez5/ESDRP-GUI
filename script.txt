@@ -95,6 +95,17 @@ local function RemoveNLR()
 	end
 end
 
+local function HideName()
+    game.ReplicatedStorage.Events.MenuActionEvent:FireServer(
+        8,
+        {
+            "",
+            "",
+            false
+        }
+    )
+end
+
 local function GiveDeleteTool()
 	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
 	tool.Name = "Delete Tool"
@@ -763,6 +774,22 @@ local option_ESP_Dispensers_Slider = CreateSlider(option_ESP_Dispensers, 130, 20
 local option_ESP_Banks = CreateOption(options, "ESP_Banks", "Banks Shown")
 local option_ESP_Banks_Slider = CreateSlider(option_ESP_Banks, 130, 205, "True", "False", false)
 
+-- Scavenge Stations Shown
+local option_ESP_ScavengeStations = CreateOption(options, "ESP_ScavengeStations", "Scavenge Stations Shown")
+local option_ESP_ScavengeStations_Slider = CreateSlider(option_ESP_ScavengeStations, 130, 205, "True", "False", false)
+
+---- Filters
+AddPadding(options, 4, "")
+AddPadding(options, 14, "ESP -> Filters")
+
+local option_ESP_PlayerFilter = CreateOption(options, "ESP_PlayerFilter", "Player Filter")
+local option_ESP_PlayerFilter_Value = CreateValue(option_ESP_PlayerFilter, 130, 205)
+
+option_ESP_PlayerFilter_Value.Text = ""
+
+local option_ESP_Filter_RedNamesOnly = CreateOption(options, "ESP_RedNamesFilter", "Red Names Only")
+local option_ESP_Filter_RedNamesOnly_Slider = CreateSlider(option_ESP_Filter_RedNamesOnly, 130, 205, "True", "False", false)
+
 ---- Tracers
 AddPadding(options, 4, "")
 AddPadding(options, 14, "ESP -> Tracers")
@@ -830,6 +857,10 @@ local option_GiveDeleteTool_Button = CreateButton(option_GiveDeleteTool, 130, 20
 
 local option_DestroyPartsUndo = CreateOption(options, "ESP_DestroyPartsUndo", "Undo Deleted Parts")
 local option_DestroyPartsUndo_Button = CreateButton(option_DestroyPartsUndo, 130, 205, "Undo", UndoDeletedPart)
+
+AddPadding(options, 4, "")
+local option_Player_HideName = CreateOption(options, "HideName", "Hide Name")
+local option_Player_HideName_Slider = CreateSlider(option_Player_HideName, 130, 205, "True", "False", false)
 
 
 -- Extra Info
@@ -1043,6 +1074,20 @@ end)
 
 local dt = 1 / 60
 
+local hideNameCoro = coroutine.create(function()
+	while wait() do
+		if scriptEnabled then
+			if option_Player_HideName_Slider.GetValue() == "True" then
+				HideName()
+			end
+		else
+			break
+		end
+	end
+end)
+
+coroutine.resume(hideNameCoro)
+
 while true do
 	if scriptEnabled then
 		step = step + 1
@@ -1096,7 +1141,28 @@ while true do
 								end
 							end
 							
-							table.insert(profiles, profile)
+							-- Filtering
+							local checked = true
+							
+							if string.len(option_ESP_PlayerFilter_Value.Text) > 0 then
+								if not string.find(string.lower(plr.Name), string.lower(option_ESP_PlayerFilter_Value.Text)) then
+									checked = false
+								end
+							end
+							
+							if option_ESP_Filter_RedNamesOnly_Slider.GetValue() == "True" then
+								if plr.Character then
+									if plr.Character:FindFirstChild("NameTag") then
+										if plr.Character.NameTag.TextLabel.TextColor3 ~= Color3.fromRGB(255, 33, 33) then
+											checked = false
+										end
+									end
+								end
+							end
+							
+							if checked then
+								table.insert(profiles, profile)
+							end
 						end
 					end
 				end
@@ -1315,6 +1381,26 @@ while true do
 									local profile = {}
 									profile.Name = "Bank"
 									profile.Model = bank
+									
+									profile.Type = "Other"
+									profile.AdditionalText = ""
+									
+									table.insert(profiles, profile)
+								end
+							end
+						end
+					end
+				end
+				
+				-- Bank
+				if option_ESP_Scavenges_Slider.GetValue() == "True" then
+					if workspace:FindFirstChild("Buildings") then
+						for _, building in pairs(workspace.Buildings:GetChildren()) do
+							for _, station in pairs(building:GetChildren()) do
+								if station.Name == "Scavenge Station" then
+									local profile = {}
+									profile.Name = "Scavenge Station"
+									profile.Model = station
 									
 									profile.Type = "Other"
 									profile.AdditionalText = ""
