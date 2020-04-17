@@ -283,6 +283,39 @@ local function MakeMorning()
 	game.StarterGui:SetCore("SendNotification", {Title = "Success!", Text = "Changed to 'Morning'"})
 end
 
+local function MakeDusk()
+	game.Lighting.Ambient = Color3.fromRGB(78, 80, 89)
+	game.Lighting.Brightness = 0.7
+	
+	game.Lighting.ColorShift_Bottom = Color3.fromRGB(95, 114, 138)
+	game.Lighting.ColorShift_Top = Color3.fromRGB(0, 0, 0)
+	
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(124, 92, 114)
+	game.Lighting.ClockTime = 17
+	game.Lighting.FogColor = Color3.fromRGB(253, 198, 189)
+	game.Lighting.FogEnd = 2000
+	game.Lighting.FogStart = 0
+	
+	game.Lighting.GeographicLatitude = 50
+	
+	game.Lighting.Bloom.Enabled = false
+	
+	game.Lighting.SunRays.Intensity = 0.25
+	game.Lighting.SunRays.Spread = 1
+	
+	game.Lighting.Condition.Value = "Night"
+	
+	-- Sky
+	game.Lighting.Sky.SkyboxBk = "rbxassetid://271042516"
+	game.Lighting.Sky.SkyboxDn = "rbxassetid://271077243"
+	game.Lighting.Sky.SkyboxFt = "rbxassetid://271042556"
+	game.Lighting.Sky.SkyboxLf = "rbxassetid://271042310"
+	game.Lighting.Sky.SkyboxRt = "rbxassetid://271042467"
+	game.Lighting.Sky.SkyboxUp = "rbxassetid://271077958"
+	
+	game.StarterGui:SetCore("SendNotification", {Title = "Success!", Text = "Changed to 'Dusk'"})
+end
+
 -- Create Gui
 local gui = Instance.new("ScreenGui", guiParent)
 gui.Name = RandomString(50)
@@ -840,6 +873,9 @@ local option_SetToNight_Button = CreateButton(option_SetToNight, 130, 205, "Chan
 local option_SetToMorning = CreateOption(options, "ESP_SetToMorning", "Change To Morning")
 local option_SetToMorning_Button = CreateButton(option_SetToMorning, 130, 205, "Change", MakeMorning)
 
+local option_SetToDusk = CreateOption(options, "ESP_SetToDusk", "Change To Dusk")
+local option_SetToDusk_Button = CreateButton(option_SetToDusk, 130, 205, "Change", MakeDusk)
+
 -- Misc.
 AddPadding(options, 4, "")
 AddPadding(options, 14, "Misc")
@@ -1392,8 +1428,8 @@ while true do
 					end
 				end
 				
-				-- Bank
-				if option_ESP_Scavenges_Slider.GetValue() == "True" then
+				-- Scavenge Station
+				if option_ESP_ScavengeStations_Slider.GetValue() == "True" then
 					if workspace:FindFirstChild("Buildings") then
 						for _, building in pairs(workspace.Buildings:GetChildren()) do
 							for _, station in pairs(building:GetChildren()) do
