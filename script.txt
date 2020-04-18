@@ -95,17 +95,6 @@ local function RemoveNLR()
 	end
 end
 
-local function HideName()
-    game.ReplicatedStorage.Events.MenuActionEvent:FireServer(
-        8,
-        {
-            "DOG",
-            "",
-            false
-        }
-    )
-end
-
 local function GiveDeleteTool()
 	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
 	tool.Name = "Delete Tool"
@@ -234,6 +223,8 @@ local function MakeNight()
 	game.Lighting.FogEnd = 2000
 	game.Lighting.FogStart = 0
 	
+	game.Lighting.GeographicLatitude = 50
+	
 	game.Lighting.Bloom.Enabled = true
 	
 	game.Lighting.SunRays.Intensity = 0.04
@@ -264,6 +255,8 @@ local function MakeMorning()
 	game.Lighting.FogColor = Color3.fromRGB(81, 107, 112)
 	game.Lighting.FogEnd = 40000
 	game.Lighting.FogStart = 0
+	
+	game.Lighting.GeographicLatitude = 50
 	
 	game.Lighting.Bloom.Enabled = false
 	
@@ -314,6 +307,36 @@ local function MakeDusk()
 	game.Lighting.Sky.SkyboxUp = "rbxassetid://271077958"
 	
 	game.StarterGui:SetCore("SendNotification", {Title = "Success!", Text = "Changed to 'Dusk'"})
+end
+
+local function MakeSnowstorm()
+	game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
+	game.Lighting.Brightness = 0
+	
+	game.Lighting.ColorShift_Bottom = Color3.fromRGB(95, 114, 138)
+	game.Lighting.ColorShift_Top = Color3.fromRGB(244, 173, 85)
+	
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(195, 195, 195)
+	game.Lighting.ClockTime = 12
+	game.Lighting.FogColor = Color3.fromRGB(193, 193, 193)
+	game.Lighting.FogEnd = 300
+	game.Lighting.FogStart = 0
+	game.Lighting.GeographicLatitude = 337
+	
+	game.Lighting.Bloom.Enabled = false
+	
+	game.Lighting.SunRays.Intensity = 0.04
+	game.Lighting.SunRays.Spread = 1.2
+	
+	game.Lighting.Condition.Value = "Snowstorm"
+	
+	-- Sky
+	game.Lighting.Sky.SkyboxBk = "rbxassetid://931421737"
+	game.Lighting.Sky.SkyboxDn = "rbxassetid://931421868"
+	game.Lighting.Sky.SkyboxFt = "rbxassetid://931421587"
+	game.Lighting.Sky.SkyboxLf = "rbxassetid://931421672"
+	game.Lighting.Sky.SkyboxRt = "rbxassetid://931421501"
+	game.Lighting.Sky.SkyboxUp = "rbxassetid://931421803"
 end
 
 -- Create Gui
@@ -876,6 +899,9 @@ local option_SetToMorning_Button = CreateButton(option_SetToMorning, 130, 205, "
 local option_SetToDusk = CreateOption(options, "ESP_SetToDusk", "Change To Dusk")
 local option_SetToDusk_Button = CreateButton(option_SetToDusk, 130, 205, "Change", MakeDusk)
 
+local option_SetToSnowstorm = CreateOption(options, "ESP_SetToSnowstorm", "Change To Snowstorm")
+local option_SetToSnowstorm_Button = CreateButton(option_SetToSnowstorm, 130, 205, "Change", MakeSnowstorm)
+
 -- Misc.
 AddPadding(options, 4, "")
 AddPadding(options, 14, "Misc")
@@ -893,10 +919,6 @@ local option_GiveDeleteTool_Button = CreateButton(option_GiveDeleteTool, 130, 20
 
 local option_DestroyPartsUndo = CreateOption(options, "ESP_DestroyPartsUndo", "Undo Deleted Parts")
 local option_DestroyPartsUndo_Button = CreateButton(option_DestroyPartsUndo, 130, 205, "Undo", UndoDeletedPart)
-
-AddPadding(options, 4, "")
-local option_Player_HideName = CreateOption(options, "HideName", "Hide Name")
-local option_Player_HideName_Slider = CreateSlider(option_Player_HideName, 130, 205, "True", "False", false)
 
 
 -- Extra Info
@@ -1019,31 +1041,33 @@ inputService.InputBegan:Connect(function(input)
 			
 			for _, p in pairs(game.Players:GetPlayers()) do
 				if p.Character and p.Name ~= localPlayer.Name then
-					if p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
-						local checked = false
-						
-						if option_Player_Aimbot_FlaggedOnly_Slider.GetValue() == "True" then
-							if p.Character:FindFirstChild("NameTag") then
-								if p.Character.NameTag.TextLabel.TextColor3 == Color3.fromRGB(255, 33, 33) then
-									checked = true
+					if p.Character:FindFirstChild("Humanoid") then
+						if p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
+							local checked = false
+							
+							if option_Player_Aimbot_FlaggedOnly_Slider.GetValue() == "True" then
+								if p.Character:FindFirstChild("NameTag") then
+									if p.Character.NameTag.TextLabel.TextColor3 == Color3.fromRGB(255, 33, 33) then
+										checked = true
+									end
 								end
+							else
+								checked = true
 							end
-						else
-							checked = true
-						end
-						
-						if checked then
-							local camPos = workspace.CurrentCamera.CFrame.Position
-							local targetPart = p.Character.HumanoidRootPart
 							
-							local a = workspace.CurrentCamera.CFrame.LookVector
-							local b = -CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position).LookVector
-							
-							local d = a:Dot(b)
-							
-							if d < closestDistance then
-								closestDistance = d
-								closestPart = targetPart
+							if checked then
+								local camPos = workspace.CurrentCamera.CFrame.Position
+								local targetPart = p.Character.HumanoidRootPart
+								
+								local a = workspace.CurrentCamera.CFrame.LookVector
+								local b = -CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position).LookVector
+								
+								local d = a:Dot(b)
+								
+								if d < closestDistance then
+									closestDistance = d
+									closestPart = targetPart
+								end
 							end
 						end
 					end
@@ -1109,20 +1133,6 @@ localPlayer.CharacterAdded:Connect(function(char)
 end)
 
 local dt = 1 / 60
-
-local hideNameCoro = coroutine.create(function()
-	while wait() do
-		if scriptEnabled then
-			if option_Player_HideName_Slider.GetValue() == "True" then
-				HideName()
-			end
-		else
-			break
-		end
-	end
-end)
-
-coroutine.resume(hideNameCoro)
 
 while true do
 	if scriptEnabled then
