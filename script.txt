@@ -3,7 +3,7 @@ local windowMinimized = false
 local windowWidth = 350
 local windowHeight = 230
 
-local guiParent = game.CoreGui
+local guiParent = game.Players.LocalPlayer.PlayerGui
 
 
 -- Keybinds
@@ -32,6 +32,8 @@ local original_CamMaxZoom = 1024
 -- States
 local scriptEnabled = true
 local aimbotEnabled = false
+
+local safeModeEnabled = true
 
 -- Functions
 local function SendNotification(title, text)
@@ -96,21 +98,23 @@ local function RemoveNLR()
 end
 
 local function GiveDeleteTool()
-	local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
-	tool.Name = "Delete Tool"
-	tool.RequiresHandle = false
-	
-	tool.Equipped:Connect(function(mouse)
-		mouse.Button1Down:Connect(function()
-			if mouse.Target then
-				local i = #deletedPartsHistory + 1
-				deletedPartsHistory[i] = {mouse.Target, mouse.Target.CFrame, mouse.Target.Anchored}
-				
-				mouse.Target.Anchored = true
-				mouse.Target.CFrame = CFrame.new(rng:NextInteger(-1000000, 1000000), 1000000, rng:NextInteger(-1000000, 1000000))
-			end
+	if safeModeEnabled == false then
+		local tool = Instance.new("Tool", game.Players.LocalPlayer.Backpack)
+		tool.Name = "Delete Tool"
+		tool.RequiresHandle = false
+		
+		tool.Equipped:Connect(function(mouse)
+			mouse.Button1Down:Connect(function()
+				if mouse.Target then
+					local i = #deletedPartsHistory + 1
+					deletedPartsHistory[i] = {mouse.Target, mouse.Target.CFrame, mouse.Target.Anchored}
+					
+					mouse.Target.Anchored = true
+					mouse.Target.CFrame = CFrame.new(rng:NextInteger(-1000000, 1000000), 1000000, rng:NextInteger(-1000000, 1000000))
+				end
+			end)
 		end)
-	end)
+	end
 end
 
 local function GiveRecallTool()
@@ -192,7 +196,11 @@ local function MakeDay()
 	game.Lighting.FogEnd = 40000
 	game.Lighting.FogStart = 0
 	
+	game.Lighting.GeographicLatitude = 13
+	
 	game.Lighting.Bloom.Enabled = false
+	game.Lighting.SunRays.Enabled = true
+	game.Lighting.ColorCorrectionEffect.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
@@ -223,9 +231,11 @@ local function MakeNight()
 	game.Lighting.FogEnd = 2000
 	game.Lighting.FogStart = 0
 	
-	game.Lighting.GeographicLatitude = 50
+	game.Lighting.GeographicLatitude = 20
 	
-	game.Lighting.Bloom.Enabled = true
+	game.Lighting.Bloom.Enabled = false
+	game.Lighting.SunRays.Enabled = true
+	game.Lighting.ColorCorrectionEffect.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.04
 	game.Lighting.SunRays.Spread = 1.2
@@ -259,6 +269,8 @@ local function MakeMorning()
 	game.Lighting.GeographicLatitude = 50
 	
 	game.Lighting.Bloom.Enabled = false
+	game.Lighting.SunRays.Enabled = true
+	game.Lighting.ColorCorrectionEffect.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
@@ -292,6 +304,8 @@ local function MakeDusk()
 	game.Lighting.GeographicLatitude = 50
 	
 	game.Lighting.Bloom.Enabled = false
+	game.Lighting.SunRays.Enabled = true
+	game.Lighting.ColorCorrectionEffect.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
@@ -321,9 +335,11 @@ local function MakeSnowstorm()
 	game.Lighting.FogColor = Color3.fromRGB(193, 193, 193)
 	game.Lighting.FogEnd = 300
 	game.Lighting.FogStart = 0
-	game.Lighting.GeographicLatitude = 337
+	game.Lighting.GeographicLatitude = 20
 	
 	game.Lighting.Bloom.Enabled = false
+	game.Lighting.SunRays.Enabled = false
+	game.Lighting.ColorCorrectionEffect.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.04
 	game.Lighting.SunRays.Spread = 1.2
@@ -337,6 +353,39 @@ local function MakeSnowstorm()
 	game.Lighting.Sky.SkyboxLf = "rbxassetid://931421672"
 	game.Lighting.Sky.SkyboxRt = "rbxassetid://931421501"
 	game.Lighting.Sky.SkyboxUp = "rbxassetid://931421803"
+end
+
+local function MakeRain()
+	game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
+	game.Lighting.Brightness = 0
+	
+	game.Lighting.ColorShift_Bottom = Color3.fromRGB(95, 114, 138)
+	game.Lighting.ColorShift_Top = Color3.fromRGB(0, 0, 0)
+	
+	game.Lighting.OutdoorAmbient = Color3.fromRGB(118, 115, 113)
+	game.Lighting.ClockTime = 17.08
+	game.Lighting.FogColor = Color3.fromRGB(145, 144, 138)
+	game.Lighting.FogEnd = 1500
+	game.Lighting.FogStart = 0
+	game.Lighting.GeographicLatitude = 20
+	
+	game.Lighting.Bloom.Enabled = false
+	game.Lighting.SunRays.Enabled = true
+	game.Lighting.ColorCorrectionEffect.Enabled = true
+	
+	game.Lighting.ColorCorrectionEffect.Saturation = -0.35
+	game.Lighting.SunRays.Intensity = 0.25
+	game.Lighting.SunRays.Spread = 1
+	
+	game.Lighting.Condition.Value = "Rain"
+	
+	-- Sky
+	game.Lighting.Sky.SkyboxBk = "rbxassetid://2506974318"
+	game.Lighting.Sky.SkyboxDn = "rbxassetid://2506974575"
+	game.Lighting.Sky.SkyboxFt = "rbxassetid://2506974238"
+	game.Lighting.Sky.SkyboxLf = "rbxassetid://2506974390"
+	game.Lighting.Sky.SkyboxRt = "rbxassetid://2506974153"
+	game.Lighting.Sky.SkyboxUp = "rbxassetid://2506974467"
 end
 
 -- Create Gui
@@ -418,7 +467,7 @@ title.TextColor3 = Color3.new(1, 1, 1)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextSize = 16
 title.Position = UDim2.new(0, 8, 0, 1)
-title.Text = "ESDRP GUI"
+title.Text = "Electric State DarkRP Hub"
 
 local titleBorder = Instance.new("Frame", frame)
 titleBorder.Name = "TitleBorder"
@@ -774,14 +823,18 @@ end
 
 
 -- Title
-AddPadding(options, 14, "ESP")
+AddPadding(options, 14, "Toggles")
 
 
-local option_ESP_Enabled = CreateOption(options, "ESP_Enabled", "Enabled")
+local option_ESP_Enabled = CreateOption(options, "ESP_Enabled", "ESP Enabled")
 local option_ESP_Enabled_Slider = CreateSlider(option_ESP_Enabled, 130, 205, "True", "False", false)
+
+local option_SafeMode_Enabled = CreateOption(options, "SafeMode_Enabled", "Safe Mode Enabled")
+local option_SafeMode_Enabled_Slider = CreateSlider(option_SafeMode_Enabled, 130, 205, "True", "False", true)
 
 -- Refresh Rate
 AddPadding(options, 4, "")
+AddPadding(options, 14, "ESP")
 
 local option_ESP_Line_RefreshRate = CreateOption(options, "ESP_Line_RefreshRate", "Refresh Rate [ms]")
 local option_ESP_Line_RefreshRate_Value = CreateValue(option_ESP_Line_RefreshRate, 130, 205)
@@ -910,7 +963,7 @@ local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
 CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
 
 AddPadding(options, 4, "")
-local option_GiveRecallTool = CreateOption(options, "ESP_GiveRecallTool", "Give Recall Tool")
+local option_GiveRecallTool = CreateOption(options, "ESP_GiveRecallTool", "Give Recall Tool [V]")
 local option_GiveRecallTool_Button = CreateButton(option_GiveRecallTool, 130, 205, "Give", GiveRecallTool)
 
 AddPadding(options, 4, "")
@@ -1143,6 +1196,12 @@ while true do
 		
 		-- Enable Backpack even when holding printers(not specifically)
 		game.StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, true)
+		
+		if option_SafeMode_Enabled_Slider.GetValue() == "True" then
+			safeModeEnabled = true
+		else
+			safeModeEnabled = false
+		end
 		
 		-- ESP
 		if tick() - lastTick > esp_RefreshRate then
