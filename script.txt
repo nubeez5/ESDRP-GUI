@@ -200,7 +200,7 @@ local function MakeDay()
 	
 	game.Lighting.Bloom.Enabled = false
 	game.Lighting.SunRays.Enabled = true
-	game.Lighting.ColorCorrectionEffect.Enabled = false
+	game.Lighting.ColorCorrection.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
@@ -235,7 +235,7 @@ local function MakeNight()
 	
 	game.Lighting.Bloom.Enabled = false
 	game.Lighting.SunRays.Enabled = true
-	game.Lighting.ColorCorrectionEffect.Enabled = false
+	game.Lighting.ColorCorrection.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.04
 	game.Lighting.SunRays.Spread = 1.2
@@ -270,7 +270,7 @@ local function MakeMorning()
 	
 	game.Lighting.Bloom.Enabled = false
 	game.Lighting.SunRays.Enabled = true
-	game.Lighting.ColorCorrectionEffect.Enabled = false
+	game.Lighting.ColorCorrection.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
@@ -305,7 +305,7 @@ local function MakeDusk()
 	
 	game.Lighting.Bloom.Enabled = false
 	game.Lighting.SunRays.Enabled = true
-	game.Lighting.ColorCorrectionEffect.Enabled = false
+	game.Lighting.ColorCorrection.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
@@ -339,7 +339,7 @@ local function MakeSnowstorm()
 	
 	game.Lighting.Bloom.Enabled = false
 	game.Lighting.SunRays.Enabled = false
-	game.Lighting.ColorCorrectionEffect.Enabled = false
+	game.Lighting.ColorCorrection.Enabled = false
 	
 	game.Lighting.SunRays.Intensity = 0.04
 	game.Lighting.SunRays.Spread = 1.2
@@ -371,9 +371,9 @@ local function MakeRain()
 	
 	game.Lighting.Bloom.Enabled = false
 	game.Lighting.SunRays.Enabled = true
-	game.Lighting.ColorCorrectionEffect.Enabled = true
+	game.Lighting.ColorCorrection.Enabled = true
 	
-	game.Lighting.ColorCorrectionEffect.Saturation = -0.35
+	game.Lighting.ColorCorrection.Saturation = -0.35
 	game.Lighting.SunRays.Intensity = 0.25
 	game.Lighting.SunRays.Spread = 1
 	
