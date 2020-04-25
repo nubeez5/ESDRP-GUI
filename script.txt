@@ -3,7 +3,7 @@ local windowMinimized = false
 local windowWidth = 350
 local windowHeight = 230
 
-local guiParent = game.Players.LocalPlayer.PlayerGui
+local guiParent = game.CoreGui
 
 
 -- Keybinds
