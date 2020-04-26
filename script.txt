@@ -1094,10 +1094,6 @@ inputService.InputBegan:Connect(function(input)
 		freecamEngaged = true
 	end
 	
-	if input.KeyCode == Enum.KeyCode.LeftControl and option_Noclip_Toggle.GetValue() == "True" then
-		noclipEnabled = true
-	end
-	
 	if input.KeyCode == aimbot_Key and option_Player_Aimbot_Enabled_Slider.GetValue() == "True" then
 		aimbotEnabled = true
 		
@@ -1170,10 +1166,6 @@ inputService.InputEnded:Connect(function(input)
 		freecamEngaged = false
 	end
 	
-	if input.KeyCode == Enum.KeyCode.LeftControl then
-		noclipEnabled = false
-	end
-	
 	if input.KeyCode == aimbot_Key then
 		aimbotEnabled = false
 	end
@@ -1224,7 +1216,7 @@ while true do
 		end
 		
 		-- Noclip
-		if noclipEnabled then
+		if option_Noclip_Toggle.GetValue() == "True" then
 			if localPlayer.Character then
 				if localPlayer.Character:FindFirstChild("Humanoid") then
 					localPlayer.Character.Humanoid:ChangeState(11)
