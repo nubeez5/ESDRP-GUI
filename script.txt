@@ -335,11 +335,13 @@ local function MakeSnowstorm()
 	game.Lighting.FogColor = Color3.fromRGB(193, 193, 193)
 	game.Lighting.FogEnd = 300
 	game.Lighting.FogStart = 0
-	game.Lighting.GeographicLatitude = 20
+	game.Lighting.GeographicLatitude = 337
 	
 	game.Lighting.Bloom.Enabled = false
-	game.Lighting.SunRays.Enabled = false
-	game.Lighting.ColorCorrection.Enabled = false
+	game.Lighting.SunRays.Enabled = true
+	game.Lighting.ColorCorrection.Enabled = true
+	
+	game.Lighting.ColorCorrection.Saturation = -0.35
 	
 	game.Lighting.SunRays.Intensity = 0.04
 	game.Lighting.SunRays.Spread = 1.2
@@ -963,6 +965,10 @@ local option_RemoveNLR = CreateOption(options, "RemoveNLR", "Remove NLR")
 CreateButton(option_RemoveNLR, 130, 205, "Remove", RemoveNLR)
 
 AddPadding(options, 4, "")
+local option_Noclip = CreateOption(options, "Noclip", "Noclip Enabled")
+local option_Noclip_Toggle = CreateSlider(option_Noclip, 130, 205, "True", "False", false)
+
+AddPadding(options, 4, "")
 local option_GiveRecallTool = CreateOption(options, "ESP_GiveRecallTool", "Give Recall Tool [V]")
 local option_GiveRecallTool_Button = CreateButton(option_GiveRecallTool, 130, 205, "Give", GiveRecallTool)
 
@@ -1064,6 +1070,9 @@ local freecamRotation = Vector2.new(0, 0)
 
 local freecamEngaged = false
 
+-- Noclip
+local noclipEnabled = false
+
 inputService.InputBegan:Connect(function(input)
 	if option_Freecam_Toggle.GetValue() == "True" then
 		if input.KeyCode == Enum.KeyCode.W then
@@ -1083,6 +1092,10 @@ inputService.InputBegan:Connect(function(input)
 	
 	if input.UserInputType == Enum.UserInputType.MouseButton2 then
 		freecamEngaged = true
+	end
+	
+	if input.KeyCode == Enum.KeyCode.LeftControl and option_Noclip_Toggle.GetValue() == "True" then
+		noclipEnabled = true
 	end
 	
 	if input.KeyCode == aimbot_Key and option_Player_Aimbot_Enabled_Slider.GetValue() == "True" then
@@ -1157,10 +1170,17 @@ inputService.InputEnded:Connect(function(input)
 		freecamEngaged = false
 	end
 	
+	if input.KeyCode == Enum.KeyCode.LeftControl then
+		noclipEnabled = false
+	end
+	
 	if input.KeyCode == aimbot_Key then
 		aimbotEnabled = false
 	end
 end)
+
+
+
 
 -- Script
 local step = 0
@@ -1201,6 +1221,15 @@ while true do
 			safeModeEnabled = true
 		else
 			safeModeEnabled = false
+		end
+		
+		-- Noclip
+		if noclipEnabled then
+			if localPlayer.Character then
+				if localPlayer.Character:FindFirstChild("Humanoid") then
+					localPlayer.Character.Humanoid:ChangeState(11)
+				end
+			end
 		end
 		
 		-- ESP
