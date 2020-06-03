@@ -20,7 +20,7 @@ Light Theme    1
 
 ]]
 
-local aimbotKey = Enum.KeyCode.LeftControl
+local aimbotKey = Enum.KeyCode.C
 
 local THEME = {}
 if themeSetting == 0 then
@@ -257,7 +257,7 @@ local function CreateOption(parent, name, text, paddingLeft)
 	option_Title.TextXAlignment = Enum.TextXAlignment.Left
 	option_Title.Text = text
 	
-	return option
+	return option, option_Title
 end
 
 local function CreateSlider(parent, sizeX, positionX, value1, value2, secondIsDefault)
@@ -731,6 +731,19 @@ local function RandomString(length)
 	return str
 end
 
+local function SendNotification(gui, title, text, playSound)
+	if playSound then
+		local sound = Instance.new("Sound", gui)
+		sound.Name = RandomString(20)
+		sound.SoundId = "rbxassetid://578970639"
+		sound:Play()
+		
+		game:GetService("Debris"):AddItem(sound, 2)
+	end
+	
+	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
+end
+
 local function TextToNumber(text)
 	return typeof(tonumber(text)) == "number" and tonumber(text) or 0
 end
@@ -764,8 +777,13 @@ local slider_Tracers_Enabled = CreateSlider(option_Tracers_Enabled, 130, 205, "T
 -- ESP -> Filters
 AddPadding(optionsContainer, 14, "ESP -> Filters")
 
+local option_HideUnreachablePrinters = CreateOption(optionsContainer, RandomString(20), "Hide Unreachable Printers", 14)
+local slider_HideUnreachablePrinters = CreateSlider(option_HideUnreachablePrinters, 130, 205, "True", "False", true)
+
+AddPadding(optionsContainer, 4, "")
+
 local option_Players_Shown = CreateOption(optionsContainer, RandomString(20), "Players Shown", 14)
-local slider_Players_Shown= CreateSlider(option_Players_Shown, 130, 205, "True", "False", true)
+local slider_Players_Shown = CreateSlider(option_Players_Shown, 130, 205, "True", "False", true)
 
 local option_Printers_Shown = CreateOption(optionsContainer, RandomString(20), "Printers Shown", 14)
 local slider_Printers_Shown = CreateSlider(option_Printers_Shown, 130, 205, "True", "False", false)
@@ -837,7 +855,20 @@ local slider_Noclip_Enabled = CreateSlider(option_Noclip_Enabled, 130, 205, "Tru
 local option_RemoveNLR = CreateOption(optionsContainer, RandomString(20), "Remove NLR", 14)
 local button_RemoveNLR = CreateButton(option_RemoveNLR, 130, 205, "Remove")
 
+-- Notifications
+AddPadding(optionsContainer, 14, "Notifications")
 
+local option_Notification_PrinterSpawn = CreateOption(optionsContainer, RandomString(20), "Notify On Printer Spawn", 14)
+local slider_Notification_PrinterSpawn = CreateSlider(option_Notification_PrinterSpawn, 130, 205, "True", "False", true)
+
+-- Statistics
+AddPadding(optionsContainer, 14, "Statistics")
+
+local _, stat_TotalPrinterMoneyFuture = CreateOption(optionsContainer, RandomString(20), "Printer Money Left To Print: N/A", 14)
+local _, stat_TotalPrinterMoneyLeft = CreateOption(optionsContainer, RandomString(20), "Printer Money Available: N/A", 14)
+
+local _, stat_BasicPrinterCount = CreateOption(optionsContainer, RandomString(20), "Basic Printer Count: N/A", 14)
+local _, stat_AdvancedPrinterCount = CreateOption(optionsContainer, RandomString(20), "Advanced Printer Count: N/A", 14)
 
 
 
@@ -855,6 +886,12 @@ local step = 0
 
 
 -- Disable Freecam when dead
+local function AddCommasToNumber(n) -- credit http://richard.warburton.it
+	local left, num, right = string.match(n, '^([^%d]*%d)(%d*)(.-)$')
+	
+	return left..(num:reverse():gsub('(%d%d%d)', '%1,'):reverse())..right
+end
+
 local function RemoveNLR()
 	for _, v in pairs(workspace:GetChildren()) do
 		if v.Name == "NL" then
@@ -916,7 +953,7 @@ inputService.InputBegan:Connect(function(input)
 							if p.Character:FindFirstChild("HumanoidRootPart") and p.Character.Humanoid.Health > 0 then
 								local checked = false
 								
-								if slider_RedNamesOnly.GetValue() == "True" then
+								if slider_Aimbot_RedNamesOnly.GetValue() == "True" then
 									if p.Character:FindFirstChild("NameTag") then
 										if p.Character.NameTag.TextLabel.TextColor3 == Color3.fromRGB(255, 33, 33) then
 											checked = true
@@ -980,6 +1017,24 @@ inputService.InputEnded:Connect(function(input)
 		aimbotEnabled = false
 	end
 end)
+
+
+-- Notify
+if workspace:FindFirstChild("MoneyPrinters") then
+	workspace.MoneyPrinters.ChildAdded:Connect(function(printer)
+		if scriptEnabled then
+			if slider_Notification_PrinterSpawn.GetValue() == "True" then
+				pcall(function()
+					if printer.Name == "Money Printer Basic" then
+						SendNotification(gui, "Alert!", "A basic printer was spawned!", true)
+					elseif printer.Name == "Money Printer Advanced" then
+						SendNotification(gui, "Alert!", "An advanced printer was spawned!", true)
+					end
+				end)
+			end
+		end
+	end)
+end
 
 
 while scriptEnabled do
@@ -1077,6 +1132,64 @@ while scriptEnabled do
 		
 		-- Electric State
 		if game.PlaceId == 2262441883 then
+			-- Update statistics
+			if workspace:FindFirstChild("MoneyPrinters") then
+				local basicPrinterCount = 0
+				local advancedPrinterCount = 0
+				local printerMoneyLeftToPrint = 0
+				local printerMoneyAlreadyPrinted = 0
+				
+				for _, entity in pairs(workspace.MoneyPrinters:GetChildren()) do
+					local skip = false
+					if entity:FindFirstChild("Main") and slider_HideUnreachablePrinters.GetValue() == "True" then
+						if entity.Main.CFrame.Position == Vector3.new(0, -1000000, 0) or math.abs(entity.Main.CFrame.Position.Y - 12.5) < 1 then
+							skip = true
+						end
+					end
+					
+					if skip == false then
+						if entity.Name == "Money Printer Basic" then
+							basicPrinterCount = basicPrinterCount + 1
+						elseif entity.Name == "Money Printer Advanced" then
+							advancedPrinterCount = advancedPrinterCount + 1
+						end
+						
+						-- Money
+						pcall(function()
+							local child = "NIL"
+							
+							if entity:FindFirstChild("Int") then
+								child = "Int"
+							elseif entity:FindFirstChild("Int2") then
+								child = "Int2"
+							end
+							
+							if child ~= "NIL" then
+								local powerMultiplier = 1
+								
+								if entity.PowerLevel.Value == 3 then
+									powerMultiplier = 0.3
+								end
+								
+								if entity.Name == "Money Printer Basic" then
+									printerMoneyLeftToPrint = printerMoneyLeftToPrint + (entity[child].Uses.Value * 280 * powerMultiplier)
+									printerMoneyAlreadyPrinted = printerMoneyAlreadyPrinted + entity[child].Money.Value
+								elseif entity.Name == "Money Printer Advanced" then
+									printerMoneyLeftToPrint = printerMoneyLeftToPrint + (entity[child].Uses.Value * 1400 * powerMultiplier)
+									printerMoneyAlreadyPrinted = printerMoneyAlreadyPrinted + entity[child].Money.Value
+								end
+							end
+						end)
+					end
+				end
+				
+				stat_TotalPrinterMoneyFuture.Text = "Printer Money Left To Print: " .. AddCommasToNumber(printerMoneyLeftToPrint)
+				stat_TotalPrinterMoneyLeft.Text = "Printer Money Available: " .. AddCommasToNumber(printerMoneyAlreadyPrinted)
+				
+				stat_BasicPrinterCount.Text = "Basic Printer Count: " .. AddCommasToNumber(basicPrinterCount)
+				stat_AdvancedPrinterCount.Text = "Advanced Printer Count: " .. AddCommasToNumber(advancedPrinterCount)
+			end
+			
 			-- Printers
 			if slider_Printers_Shown.GetValue() == "True" then
 				if workspace:FindFirstChild("MoneyPrinters") then
@@ -1085,29 +1198,38 @@ while scriptEnabled do
 						profile.Name = entity.Name
 						profile.Parts = entity:GetDescendants()
 						profile.Model = entity
+						profile.TextColor = Color3.fromRGB(70, 180, 70)
 						
 						profile.AdditionalText = ""
 						
-						
-						local child = "NIL"
-						
-						if entity:FindFirstChild("Int") then
-							child = "Int"
-						elseif entity:FindFirstChild("Int2") then
-							child = "Int2"
-						end
-						
-						if child ~= "NIL" then
-							profile.AdditionalText = "[ " .. entity[child].Money.Value .. " money left ][ " .. entity[child].Uses.Value .. " uses left ]"
-							
-							if entity.TrueOwner.Locked.Value == false then
-								profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
-							else
-								profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+						local skip = false
+						if entity:FindFirstChild("Main") and slider_HideUnreachablePrinters.GetValue() == "True" then
+							if entity.Main.CFrame.Position == Vector3.new(0, -1000000, 0) or math.abs(entity.Main.CFrame.Position.Y - 12.5) < 1 then
+								skip = true
 							end
 						end
 						
-						table.insert(PROFILES, profile)
+						if skip == false then
+							local child = "NIL"
+							
+							if entity:FindFirstChild("Int") then
+								child = "Int"
+							elseif entity:FindFirstChild("Int2") then
+								child = "Int2"
+							end
+							
+							if child ~= "NIL" then
+								profile.AdditionalText = "[ " .. entity[child].Money.Value .. " money left ][ " .. entity[child].Uses.Value .. " uses left ]"
+								
+								if entity.TrueOwner.Locked.Value == false then
+									profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+								else
+									profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+								end
+							end
+							
+							table.insert(PROFILES, profile)
+						end
 					end
 				end
 			end
