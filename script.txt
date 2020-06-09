@@ -37,6 +37,8 @@ if themeSetting == 0 then
 	THEME.Background_Color_2 = Color3.fromRGB(45, 45, 45)
 	THEME.Background_Color_3 = Color3.fromRGB(30, 30, 30)
 	
+	THEME.ListBackground = Color3.fromRGB(45, 45, 45)
+	
 	THEME.SearchIcon_Color = Color3.fromRGB(160, 160, 160)
 	THEME.SearchBox_Suggestions_Background_Color = Color3.fromRGB(45, 45, 45)
 	THEME.SearchBox_SuggestionsBorder_Color = Color3.fromRGB(90, 90, 90)
@@ -202,7 +204,7 @@ local function CreateDragHandle(parent, attachedGui, name, size, position, ancho
 	return handle
 end
 
-local function CreateScrollingFrame(parent, name, sizeX, positionX, anchorPoint, padding)
+local function CreateScrollingFrame(parent, name, size, positionX, anchorPoint, padding)
 	local container_Size = positionX ~= nil and positionX or UDim2.new(0, 0, 0, 0)
 	local container_AnchorPoint = anchorPoint ~= nil and anchorPoint or Vector2.new(0, 0)
 	
@@ -211,7 +213,7 @@ local function CreateScrollingFrame(parent, name, sizeX, positionX, anchorPoint,
 	container.BorderSizePixel = 0
 	container.BackgroundTransparency = 1
 	container.ScrollingEnabled = true
-	container.Size = sizeX
+	container.Size = size
 	container.Position = container_Size
 	container.AnchorPoint = container_AnchorPoint
 	container.BottomImage = container.MidImage
@@ -682,6 +684,24 @@ local function CreateTextBox(parent, sizeX, positionX, defaultText)
 	return returnTable
 end
 
+local function CreateList(parent, sizeY)
+	local housing = Instance.new("Frame", parent)
+	housing.Name = "ListBackground"
+	housing.Size = UDim2.new(1, 0, 0, sizeY)
+	housing.BackgroundTransparency = 1
+	
+	local background = CreateFrame(housing, "ListBackground", 4, UDim2.new(1, -22, 0, sizeY - 4), UDim2.new(0.5, -4, 0.5, 0), Vector2.new(0.5, 0.5))
+	background.ImageColor3 = THEME.ListBackground
+	background.ZIndex = 1
+	
+	local container = CreateScrollingFrame(background, "Container", UDim2.new(1, 0, 1, 0), UDim2.new(0, 0, 0, 0), nil)
+	
+	local uiListLayout = Instance.new("UIListLayout", background)
+	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	
+	return container
+end
+
 
 
 
@@ -736,6 +756,7 @@ local function SendNotification(gui, title, text, playSound)
 		local sound = Instance.new("Sound", gui)
 		sound.Name = RandomString(20)
 		sound.SoundId = "rbxassetid://578970639"
+		sound.Volume = 2.5
 		sound:Play()
 		
 		game:GetService("Debris"):AddItem(sound, 2)
@@ -840,8 +861,15 @@ local option_Freecam_Speed = CreateOption(optionsContainer, RandomString(20), "S
 local textBox_Freecam_Speed = CreateTextBox(option_Freecam_Speed, 130, 205, "100")
 
 AddPadding(optionsContainer, 4)
+
 local option_Freecam_TeleportHere = CreateOption(optionsContainer, RandomString(20), "Teleport To Camera", 14)
 local button_Freecam_TeleportHere = CreateButton(option_Freecam_TeleportHere, 130, 205, "Teleport")
+
+-- Notifications
+AddPadding(optionsContainer, 14, "Notifications")
+
+local option_Notification_PrinterSpawn = CreateOption(optionsContainer, RandomString(20), "Notify On Printer Spawn", 14)
+local slider_Notification_PrinterSpawn = CreateSlider(option_Notification_PrinterSpawn, 130, 205, "True", "False", true)
 
 -- Misc
 AddPadding(optionsContainer, 14, "Miscellaneous")
@@ -855,11 +883,16 @@ local slider_Noclip_Enabled = CreateSlider(option_Noclip_Enabled, 130, 205, "Tru
 local option_RemoveNLR = CreateOption(optionsContainer, RandomString(20), "Remove NLR", 14)
 local button_RemoveNLR = CreateButton(option_RemoveNLR, 130, 205, "Remove")
 
--- Notifications
-AddPadding(optionsContainer, 14, "Notifications")
+-- Waypoints
+AddPadding(optionsContainer, 14, "Waypoints")
 
-local option_Notification_PrinterSpawn = CreateOption(optionsContainer, RandomString(20), "Notify On Printer Spawn", 14)
-local slider_Notification_PrinterSpawn = CreateSlider(option_Notification_PrinterSpawn, 130, 205, "True", "False", true)
+local option_Waypoint_SetAtCamera = CreateOption(optionsContainer, RandomString(20), "Set waypoint at", 14)
+local button_Waypoint_SetAtCamera = CreateButton(option_Waypoint_SetAtCamera, 130, 205, "Camera")
+
+local option_Waypoint_SetAtCharacter = CreateOption(optionsContainer, RandomString(20), "", 14)
+local button_Waypoint_SetAtCharacter = CreateButton(option_Waypoint_SetAtCharacter, 130, 205, "Character")
+
+local waypoint_List = CreateList(optionsContainer, 120)
 
 -- Statistics
 AddPadding(optionsContainer, 14, "Statistics")
@@ -869,6 +902,7 @@ local _, stat_TotalPrinterMoneyLeft = CreateOption(optionsContainer, RandomStrin
 
 local _, stat_BasicPrinterCount = CreateOption(optionsContainer, RandomString(20), "Basic Printer Count: N/A", 14)
 local _, stat_AdvancedPrinterCount = CreateOption(optionsContainer, RandomString(20), "Advanced Printer Count: N/A", 14)
+
 
 
 
@@ -898,6 +932,65 @@ local function RemoveNLR()
 			v:Destroy()
 		end
 	end
+end
+
+local function AddWaypointToList(list, name, position)
+	local waypointContainer = Instance.new("Frame", list)
+	waypointContainer.Name = name
+	waypointContainer.Size = UDim2.new(1, 0, 0, 18)
+	waypointContainer.BackgroundTransparency = 1
+	
+	local buttonFrame = CreateFrame(waypointContainer, "TitleFrame", 4, UDim2.new(0, 40, 1, -4), UDim2.new(1, -24, 0.5, 0), Vector2.new(1, 0.5))
+	buttonFrame.ImageColor3 = Color3.new(THEME.ListBackground.r + 0.066666, THEME.ListBackground.g + 0.066666, THEME.ListBackground.b + 0.066666)
+	
+	local button = Instance.new("TextButton", buttonFrame)
+	button.Name = "ButtonText"
+	button.Font = THEME.TextFont_SemiBold
+	button.TextSize = 12
+	button.Size = UDim2.new(1, 0, 1, 0)
+	button.Text = "Goto"
+	button.BackgroundTransparency = 1
+	button.TextColor3 = THEME.TextColor
+	
+	local closeButton = Instance.new("ImageButton", waypointContainer)
+	closeButton.Name = "CloseButton"
+	closeButton.Image = "rbxassetid://4389749368"
+	closeButton.Size = UDim2.new(0, 9, 0, 9)
+	closeButton.AnchorPoint = Vector2.new(0, 0.5)
+	closeButton.BackgroundTransparency = 1
+	closeButton.AutoButtonColor = false
+	closeButton.Position = UDim2.new(1, -18, 0.5, 0)
+	
+	local title = Instance.new("TextBox", waypointContainer)
+	title.Name = "Title"
+	title.Text = name
+	title.Font = THEME.TextFont_SemiBold
+	title.TextSize = 12
+	title.TextColor3 = THEME.TextColor
+	title.Size = UDim2.new(1, -80, 1, 0)
+	title.Position = UDim2.new(0, 4, 0, 0)
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.BackgroundTransparency = 1
+	title.TextWrapped = true
+	
+	
+	closeButton.MouseButton1Click:Connect(function()
+		waypointContainer:Destroy()
+	end)
+	
+	button.MouseButton1Click:Connect(function()
+		if game.Players.LocalPlayer.Character then
+			game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(position))
+		end
+	end)
+	
+	button.MouseEnter:Connect(function()
+		buttonFrame.ImageColor3 = Color3.new(THEME.ListBackground.r + 0.033333, THEME.ListBackground.g + 0.033333, THEME.ListBackground.b + 0.033333)
+	end)
+	
+	button.MouseLeave:Connect(function()
+		buttonFrame.ImageColor3 = Color3.new(THEME.ListBackground.r + 0.066666, THEME.ListBackground.g + 0.066666, THEME.ListBackground.b + 0.066666)
+	end)
 end
 
 if localPlayer.Character then
@@ -1037,6 +1130,11 @@ if workspace:FindFirstChild("MoneyPrinters") then
 end
 
 
+-- Preset waypoints
+AddWaypointToList(waypoint_List, "Pool Building Roof", Vector3.new(1180, 460.55, -900))
+AddWaypointToList(waypoint_List, "Grape Vines", Vector3.new(1255, 288, -1982))
+AddWaypointToList(waypoint_List, "Tree at Spawn", Vector3.new(-405.2, 195.8, 131.6))
+
 while scriptEnabled do
 	step = step + 1
 	
@@ -1142,7 +1240,7 @@ while scriptEnabled do
 				for _, entity in pairs(workspace.MoneyPrinters:GetChildren()) do
 					local skip = false
 					if entity:FindFirstChild("Main") and slider_HideUnreachablePrinters.GetValue() == "True" then
-						if entity.Main.CFrame.Position == Vector3.new(0, -1000000, 0) or math.abs(entity.Main.CFrame.Position.Y - 12.5) < 1 then
+						if entity.Main.CFrame.Position == Vector3.new(0, -1000000, 0) or math.abs(entity.Main.CFrame.Position.Y - 12.5) < 1 and entity.Main.CFrame.Position.Y < 1300 then
 							skip = true
 						end
 					end
@@ -1238,44 +1336,48 @@ while scriptEnabled do
 			if slider_Entities_Shown.GetValue() == "True" then
 				if workspace:FindFirstChild("Entities") then
 					for _, entity in pairs(workspace.Entities:GetChildren()) do
-						local profile = {}
-						profile.Parts = entity:GetDescendants()
-						profile.Model = entity
-						
-						profile.AdditionalText = ""
-						
-						
-						local child = "NIL"
-						
-						if entity:FindFirstChild("Int") then
-							child = "Int"
-						elseif entity:FindFirstChild("Int2") then
-							child = "Int2"
-						end
-						
-						if entity.Name == "Gun" then
-							profile.Name = entity[child].Value
-							
-							if entity[child]:FindFirstChild("Uses") then
-								profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
+						pcall(function()
+							if entity:GetPrimaryPartCFrame().Position.Y > 82 then
+								local profile = {}
+								profile.Parts = entity:GetDescendants()
+								profile.Model = entity
+								
+								profile.AdditionalText = ""
+								
+								
+								local child = "NIL"
+								
+								if entity:FindFirstChild("Int") then
+									child = "Int"
+								elseif entity:FindFirstChild("Int2") then
+									child = "Int2"
+								end
+								
+								if entity.Name == "Gun" then
+									profile.Name = entity[child].Value
+									
+									if entity[child]:FindFirstChild("Uses") then
+										profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
+									end
+								else
+									profile.Name = entity.Name
+									
+									if entity[child]:FindFirstChild("Uses") then
+										profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
+									end
+								end
+								
+								if entity:FindFirstChild("TrueOwner") then
+									if entity.TrueOwner.Locked.Value == false then
+										profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
+									else
+										profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
+									end
+								end
+								
+								table.insert(PROFILES, profile)
 							end
-						else
-							profile.Name = entity.Name
-							
-							if entity[child]:FindFirstChild("Uses") then
-								profile.AdditionalText = "[ " .. entity[child].Uses.Value .. " left ]"
-							end
-						end
-						
-						if entity:FindFirstChild("TrueOwner") then
-							if entity.TrueOwner.Locked.Value == false then
-								profile.AdditionalText = profile.AdditionalText .. "[ UNLOCKED ]"
-							else
-								profile.AdditionalText = profile.AdditionalText .. "[ LOCKED ]"
-							end
-						end
-						
-						table.insert(PROFILES, profile)
+						end)
 					end
 				end
 			end
@@ -1625,6 +1727,19 @@ while scriptEnabled do
 		
 		cam.CFrame = cam.CFrame * CFrame.new(freecamVelocity.Unit * dt * speed)
 		cam.CFrame = CFrame.new(cam.CFrame.Position) * CFrame.fromOrientation(-math.rad(freecamRotation.Y), -math.rad(freecamRotation.X), 0)
+	end
+	
+	-- Set waypoint
+	if button_Waypoint_SetAtCamera.WasClicked() then
+		AddWaypointToList(waypoint_List, "New Camera Waypoint", workspace.CurrentCamera.CFrame.Position)
+	end
+	
+	if button_Waypoint_SetAtCharacter.WasClicked() then
+		if localPlayer.Character then
+			pcall(function()
+				AddWaypointToList(waypoint_List, "New Character Waypoint", localPlayer.Character:GetPrimaryPartCFrame().Position)
+			end)
+		end
 	end
 	
 	-- Teleport to camera
