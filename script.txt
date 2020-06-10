@@ -789,6 +789,9 @@ AddPadding(optionsContainer, 14, "ESP")
 local option_NameTags_Enabled = CreateOption(optionsContainer, RandomString(20), "Name Tags Enabled", 14)
 local slider_NameTags_Enabled = CreateSlider(option_NameTags_Enabled, 130, 205, "True", "False", true)
 
+local option_FasterPlayerHitBoxes_Enabled = CreateOption(optionsContainer, RandomString(20), "Faster ESP For Players", 14)
+local slider_FasterPlayerHitBoxes_Enabled = CreateSlider(option_FasterPlayerHitBoxes_Enabled, 130, 205, "True", "False", true)
+
 -- ESP -> Tracers
 AddPadding(optionsContainer, 14, "ESP -> Tracers")
 
@@ -1171,10 +1174,34 @@ while scriptEnabled do
 					
 					if humanoid then
 						if humanoid.Health > 0 then
+							if not plr.Character:FindFirstChild("ESP_Hitbox_Model") then
+								local model = Instance.new("Model", plr.Character)
+								model.Name = "ESP_Hitbox_Model"
+								
+								local box = Instance.new("Part", model)
+								box.Name = "ESP_Hitbox"
+								box.Size = Vector3.new(4, 5, 2)
+								box.CFrame = plr.Character.HumanoidRootPart.CFrame * CFrame.new(0, -0.25, 0)
+								box.Transparency = 1
+								box.CanCollide = false
+								box.Massless = true
+								
+								local weld = Instance.new("WeldConstraint", box)
+								weld.Part0 = plr.Character.HumanoidRootPart
+								weld.Part1 = box
+							end
+							
+							
 							local profile = {}
 							profile.Name = plr.Name
-							profile.Model = plr.Character
-							profile.Parts = plr.Character:GetDescendants()
+							
+							if slider_FasterPlayerHitBoxes_Enabled.GetValue() == "True" then
+								profile.Model = plr.Character.ESP_Hitbox_Model
+								profile.Parts = {plr.Character.ESP_Hitbox_Model.ESP_Hitbox}
+							else
+								profile.Model = plr.Character
+								profile.Parts = plr.Character:GetDescendants()
+							end
 							
 							profile.AdditionalText = ""
 							
