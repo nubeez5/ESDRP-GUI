@@ -771,6 +771,21 @@ local function SendNotification(gui, title, text, playSound)
 	game.StarterGui:SetCore("SendNotification", {Title = title, Text = text})
 end
 
+local function GetFullName(object)
+    local str = object.Name
+    local obj = object
+
+	local removeDot = false
+    
+    repeat
+		str = obj.Parent.Name .. "." .. str
+		
+        obj = obj.Parent
+    until obj.Parent == game
+    
+    return str
+end
+
 local function TextToNumber(text)
 	return typeof(tonumber(text)) == "number" and tonumber(text) or 0
 end
@@ -788,6 +803,9 @@ AddPadding(optionsContainer, 14, "Toggles")
 
 local option_ESP_Enabled = CreateOption(optionsContainer, RandomString(20), "ESP Enabled", 14)
 local slider_ESP_Enabled = CreateSlider(option_ESP_Enabled, 130, 205, "True", "False", false)
+
+local option_Info_Enabled = CreateOption(optionsContainer, RandomString(20), "Info Enabled", 14)
+local slider_Info_Enabled = CreateSlider(option_Info_Enabled, 130, 205, "True", "False", true)
 
 -- ESP
 AddPadding(optionsContainer, 14, "ESP")
@@ -915,7 +933,21 @@ local _, stat_TotalPrinterMoneyLeft = CreateOption(optionsContainer, RandomStrin
 local _, stat_BasicPrinterCount = CreateOption(optionsContainer, RandomString(20), "Basic Printer Count: N/A", 14)
 local _, stat_AdvancedPrinterCount = CreateOption(optionsContainer, RandomString(20), "Advanced Printer Count: N/A", 14)
 
+-- Info at top of screen
+local nodeOwnedByText = Instance.new("TextLabel", gui)
+nodeOwnedByText.Name = RandomString(20)
+nodeOwnedByText.Font = Enum.Font.Code
+nodeOwnedByText.BackgroundTransparency = 1
+nodeOwnedByText.Size = UDim2.new(1, 0, 0, 20)
+nodeOwnedByText.Position = UDim2.new(0, 0, 0, 4)
+nodeOwnedByText.TextColor3 = Color3.new(1, 1, 1)
+nodeOwnedByText.TextSize = 14
+nodeOwnedByText.Text = ""
 
+local pictureSignIdRevealer = nodeOwnedByText:Clone()
+pictureSignIdRevealer.Parent = gui
+pictureSignIdRevealer.Name = RandomString(20)
+pictureSignIdRevealer.Position = UDim2.new(0, 0, 0, 18)
 
 
 
@@ -1813,5 +1845,48 @@ while scriptEnabled do
 		RemoveNLR()
 	end
 	
+	-- Info at top of screen
+	do
+		if slider_Info_Enabled.GetValue() == "True" then
+			nodeOwnedByText.TextTransparency = 0
+			pictureSignIdRevealer.TextTransparency = 0
+			
+			pcall(function()
+				local p = localPlayerMouse.Target
+				
+				nodeOwnedByText.Text = "Node Owner: N/A"
+				pictureSignIdRevealer.Text = "Picture Id: N/A"
+				
+				if p then
+					if p.Parent then
+						if p.Parent.Name == "Picture Sign 1" or p.Parent.Name == "Picture Sign 2" then
+							pictureSignIdRevealer.Text = "Picture Id: " .. p.Parent.Part.SurfaceGui["1"].Image
+						end
+					end
+					
+					for _, v in pairs(game.Players:GetPlayers()) do
+						local fullName = GetFullName(p)
+						
+						if string.find(fullName, v.Name) and string.find(fullName, "Buildings") then
+							nodeOwnedByText.Text = "Node Owner: " .. v.Name
+							
+							break
+						end
+					end
+				end
+			end)
+		else
+			nodeOwnedByText.TextTransparency = 1
+			pictureSignIdRevealer.TextTransparency = 1
+		end
+	end
+	
+	
 	dt = game:GetService("RunService").RenderStepped:Wait()
 end
+
+-- Cleanup
+workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+
+nodeOwnedByText:Destroy()
+pictureSignIdRevealer:Destroy()
