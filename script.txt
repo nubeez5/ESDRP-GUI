@@ -32,6 +32,7 @@ if themeSetting == 0 then
 	THEME.Padding_TextColor = Color3.fromRGB(110, 140, 230)
 	
 	THEME.TextColor = Color3.fromRGB(255, 255, 255)
+	THEME.HighlightedTextColor = Color3.fromRGB(255, 255, 255)
 	
 	THEME.Background_Color_1 = Color3.fromRGB(60, 60, 60)
 	THEME.Background_Color_2 = Color3.fromRGB(45, 45, 45)
@@ -240,7 +241,7 @@ local function CreateScrollingFrame(parent, name, size, positionX, anchorPoint, 
 	return container
 end
 
-local function CreateOption(parent, name, text, paddingLeft)
+local function CreateOption(parent, name, text, paddingLeft, highlighted)
 	local option = Instance.new("Frame", parent)
 	option.Name = name
 	option.BackgroundTransparency = 1
@@ -258,6 +259,11 @@ local function CreateOption(parent, name, text, paddingLeft)
 	option_Title.TextSize = 14
 	option_Title.TextXAlignment = Enum.TextXAlignment.Left
 	option_Title.Text = text
+	
+	if highlighted then
+		option_Title.Font = THEME.TextFont_Bold
+		option_Title.TextColor3 = THEME.HighlightedTextColor
+	end
 	
 	return option, option_Title
 end
@@ -806,19 +812,19 @@ local slider_HideUnreachablePrinters = CreateSlider(option_HideUnreachablePrinte
 
 AddPadding(optionsContainer, 4, "")
 
-local option_Players_Shown = CreateOption(optionsContainer, RandomString(20), "Players Shown", 14)
+local option_Players_Shown = CreateOption(optionsContainer, RandomString(20), "Players Shown", 14, true)
 local slider_Players_Shown = CreateSlider(option_Players_Shown, 130, 205, "True", "False", true)
 
-local option_Printers_Shown = CreateOption(optionsContainer, RandomString(20), "Printers Shown", 14)
+local option_Printers_Shown = CreateOption(optionsContainer, RandomString(20), "Printers Shown", 14, true)
 local slider_Printers_Shown = CreateSlider(option_Printers_Shown, 130, 205, "True", "False", false)
 
-local option_Entities_Shown = CreateOption(optionsContainer, RandomString(20), "Shipments/Items Shown", 14)
+local option_Entities_Shown = CreateOption(optionsContainer, RandomString(20), "Shipments/Items Shown", 14, false)
 local slider_Entities_Shown = CreateSlider(option_Entities_Shown, 130, 205, "True", "False", false)
 
-local option_Banks_Shown = CreateOption(optionsContainer, RandomString(20), "Banks Shown", 14)
+local option_Banks_Shown = CreateOption(optionsContainer, RandomString(20), "Banks Shown", 14, false)
 local slider_Banks_Shown = CreateSlider(option_Banks_Shown, 130, 205, "True", "False", false)
 
-local option_LootBoxes_Shown = CreateOption(optionsContainer, RandomString(20), "Loot Boxes Shown", 14)
+local option_LootBoxes_Shown = CreateOption(optionsContainer, RandomString(20), "Loot Boxes Shown", 14, true)
 local slider_LootBoxes_Shown = CreateSlider(option_LootBoxes_Shown, 130, 205, "True", "False", false)
 
 local option_Materials_Shown = CreateOption(optionsContainer, RandomString(20), "Materials Shown", 14)
@@ -832,6 +838,9 @@ local slider_ScavengeStations_Shown = CreateSlider(option_ScavengeStations_Shown
 
 local option_Dispensers_Shown = CreateOption(optionsContainer, RandomString(20), "Dispensers Shown", 14)
 local slider_Dispensers_Shown = CreateSlider(option_Dispensers_Shown, 130, 205, "True", "False", false)
+
+local option_Jukeboxes_Shown = CreateOption(optionsContainer, RandomString(20), "Jukeboxes Shown", 14, false)
+local slider_Jukeboxes_Shown = CreateSlider(option_Jukeboxes_Shown, 130, 205, "True", "False", false)
 
 local option_Vehicles_Shown = CreateOption(optionsContainer, RandomString(20), "Vehicles Shown", 14)
 local slider_Vehicles_Shown = CreateSlider(option_Vehicles_Shown, 130, 205, "True", "False", false)
@@ -1528,6 +1537,29 @@ while scriptEnabled do
 										profile.AdditionalText = profile.AdditionalText .. "[ " .. dispenser.Dispencer.Value .. " ][ Price: " .. dispenser.Dispencer.Price.Value .. " ][ " .. dispenser.Dispencer.Count.Value .. " left ]"
 									end
 								end
+								
+								table.insert(PROFILES, profile)
+							end
+						end
+					end
+				end
+			end
+			
+			-- Jukeboxes
+			if slider_Jukeboxes_Shown.GetValue() == "True" then
+				if workspace:FindFirstChild("Buildings") then
+					for _, building in pairs(workspace.Buildings:GetChildren()) do
+						for _, jukebox in pairs(building:GetChildren()) do
+							if jukebox.Name == "Jukebox" then
+								local profile = {}
+								profile.Name = "Jukebox"
+								profile.Model = jukebox
+								
+								profile.Type = "Other"
+								profile.AdditionalText = ""
+								
+								local soundId = tostring(jukebox.Speaker.Sound.SoundId)
+								profile.AdditionalText = profile.AdditionalText .. "[ SoundId: " .. string.sub(soundId, 14, string.len(soundId)) .. " ]"
 								
 								table.insert(PROFILES, profile)
 							end
