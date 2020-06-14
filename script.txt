@@ -927,7 +927,6 @@ local waypoint_List = CreateList(optionsContainer, 120)
 -- Statistics
 AddPadding(optionsContainer, 14, "Statistics")
 
-local _, stat_TotalPrinterMoneyFuture = CreateOption(optionsContainer, RandomString(20), "Printer Money Left To Print: N/A", 14)
 local _, stat_TotalPrinterMoneyLeft = CreateOption(optionsContainer, RandomString(20), "Printer Money Available: N/A", 14)
 
 local _, stat_BasicPrinterCount = CreateOption(optionsContainer, RandomString(20), "Basic Printer Count: N/A", 14)
@@ -1354,7 +1353,6 @@ while scriptEnabled do
 					end
 				end
 				
-				stat_TotalPrinterMoneyFuture.Text = "Printer Money Left To Print: " .. AddCommasToNumber(printerMoneyLeftToPrint)
 				stat_TotalPrinterMoneyLeft.Text = "Printer Money Available: " .. AddCommasToNumber(printerMoneyAlreadyPrinted)
 				
 				stat_BasicPrinterCount.Text = "Basic Printer Count: " .. AddCommasToNumber(basicPrinterCount)
