@@ -933,6 +933,11 @@ local _, stat_TotalPrinterMoneyLeft = CreateOption(optionsContainer, RandomStrin
 local _, stat_BasicPrinterCount = CreateOption(optionsContainer, RandomString(20), "Basic Printer Count: N/A", 14)
 local _, stat_AdvancedPrinterCount = CreateOption(optionsContainer, RandomString(20), "Advanced Printer Count: N/A", 14)
 
+-- Additional Messages
+AddPadding(optionsContainer, 14, "Additional Notes")
+
+local notes_Kazinium = CreateOption(optionsContainer, RandomString(20), "Kazinium is pissed.", 14)
+
 -- Info at top of screen
 local nodeOwnedByText = Instance.new("TextLabel", gui)
 nodeOwnedByText.Name = RandomString(20)
