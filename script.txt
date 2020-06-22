@@ -901,6 +901,9 @@ AddPadding(optionsContainer, 14, "Notifications")
 local option_Notification_PrinterSpawn = CreateOption(optionsContainer, RandomString(20), "Notify On Printer Spawn", 14)
 local slider_Notification_PrinterSpawn = CreateSlider(option_Notification_PrinterSpawn, 130, 205, "True", "False", true)
 
+local option_Notification_FriendJoined = CreateOption(optionsContainer, RandomString(20), "Notify When Friend Joins", 14)
+local slider_Notification_FriendJoined = CreateSlider(option_Notification_FriendJoined, 130, 205, "True", "False", true)
+
 -- Misc
 AddPadding(optionsContainer, 14, "Miscellaneous")
 
@@ -1176,6 +1179,16 @@ if workspace:FindFirstChild("MoneyPrinters") then
 		end
 	end)
 end
+
+game.Players.PlayerAdded:Connect(function(plr)
+	if slider_Notification_FriendJoined.GetValue() == "True" and scriptEnabled then
+		if plr:IsFriendsWith(game.Players.LocalPlayer.UserId) then
+			pcall(function()
+				SendNotification(gui, "A friend joined!", plr.Name .. " just joined!", true)
+			end)
+		end
+	end
+end)
 
 
 -- Preset waypoints
@@ -1890,6 +1903,7 @@ end
 
 -- Cleanup
 workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+game:GetService("ContextActionService"):BindActionAtPriority("WASDKeys", function() return Enum.ContextActionResult.Pass end, false, Enum.ContextActionPriority.High.Value, Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D, Enum.KeyCode.LeftShift, Enum.KeyCode.Space)
 
 nodeOwnedByText:Destroy()
 pictureSignIdRevealer:Destroy()
