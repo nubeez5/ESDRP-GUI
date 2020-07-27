@@ -1580,8 +1580,10 @@ while scriptEnabled do
 								profile.Type = "Other"
 								profile.AdditionalText = ""
 								
-								local soundId = tostring(jukebox.Speaker.Sound.SoundId)
-								profile.AdditionalText = profile.AdditionalText .. "[ SoundId: " .. string.sub(soundId, 14, string.len(soundId)) .. " ]"
+								if jukebox:FindFirstChild("Speaker") then
+									local soundId = tostring(jukebox.Speaker.Sound.SoundId)
+									profile.AdditionalText = profile.AdditionalText .. "[ SoundId: " .. string.sub(soundId, 14, string.len(soundId)) .. " ]"
+								end
 								
 								table.insert(PROFILES, profile)
 							end
